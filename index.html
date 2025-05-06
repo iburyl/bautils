@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAV Spectrogram Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .input_list {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #f5f5f5;
+        }
+        button {
+            padding: 5px 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="input_list">
+        <input type="file" id="wavFile" accept=".wav" />
+        <!--
+        Does not work
+        <div>or URL</div>
+            <input type="text" id="wavFileUrl" style="width: 50%;" />
+            <button id="load">load</button>
+        </div>
+        -->
+        <div class="input_list">
+        <audio id="audioPlayer" controls></audio>
+        <button id="ratio_1_1">1:1</button>
+        <button id="ratio_3_2">3:2</button>
+        <button id="ratio_max">max</button>
+        </div>
+        <canvas id="mainCanvas"></canvas>
+        <div>
+            <button id="move_left_fast">&#x25C0;&#x25C0;</button>
+            <button id="move_left">&#x25C0;</button>
+            <button id="updateButton">Update</button>
+            <button id="zoom_in">Zoom in</button>
+            <button id="zoom_peak">Zoom in peak</button>
+            <button id="zoom_out">Zoom out</button>
+            <button id="resetButton">Reset</button>
+            <button id="move_right">&#x25B6;</button>
+            <button id="move_right_fast">&#x25B6;&#x25B6;</button>
+        </div>
+        <div class="input_list">
+            <div>Start (s)<br /><input type="text" id="start"></div>
+            <div>Stop (s)<br /><input type="text" id="stop"></div>
+            <div>Min Freq (KHz)<br /><input type="text" id="min_freq"></div>
+            <div>Max Freq (KHz)<br /><input type="text" id="max_freq"></div>
+            
+        </div>
+        <div class="input_list">
+            <div>FFT<br /><input type="text" id="fft"></div>
+            <div>Hop size<br /><input type="text" id="hop"></div>
+            <div>Min magnitude log<br /><input type="text" id="min_e"></div>
+            <div>Kaiser Beta<br /><input type="text" id="kaiser_beta"></div>
+        </div>
+        <div class="input_list">
+            <div>Search Min Freq (KHz)<br /><input type="text" id="peak_min_freq"></div>
+            <div>Search Max Freq (KHz)<br /><input type="text" id="peak_max_freq"></div>
+        </div>
+        <div class="input_list">
+            <div id="info"></div>
+            <div id="peak_stats"></div>                
+        </div>
+
+    </div>
+    <script src="js-wav/fft.js"></script>
+    <script src="js-wav/utils-draw.js"></script>
+    <script src="js-wav/utils-math.js"></script>
+    <script src="js-wav/utils-wav.js"></script>
+    <script src="js-wav/analysis.js"></script>
+    <script src="js-wav/draw-axis.js"></script>
+    <script src="js-wav/draw-graph.js"></script>
+    <script src="js-wav/script.js"></script>
+</body>
+</html> 
