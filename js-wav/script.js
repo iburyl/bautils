@@ -270,6 +270,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showFile();
     });
 
+
+    /*
     document.getElementById('load').addEventListener('click', async () => {
         //try {
             const file = await urlToFile(document.getElementById('load').value, 'data.wav', 'application/octet-stream');
@@ -281,13 +283,12 @@ document.addEventListener('DOMContentLoaded', () => {
             //showFile();
 
         //} 
-        /*
         catch (error) {
             console.error(error);
             alert('Failed to load file');
         }
-        */
     });
+    */
 
     document.getElementById('updateButton').addEventListener('click', async () => {
         showFile();
