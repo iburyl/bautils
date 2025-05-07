@@ -1,14 +1,5 @@
 "use strict";
 
-/* Joseph M. Szewczak, 2010
-The benefits of full-spectrum data for analyzing bat echolocation calls.
-https://sonobat.com/wp-content/uploads/2014/02/presentation.pdf
-
-Oisin Mac Aodha, et. al., 2018    
-Bat detective-Deep learning tools for bat acoustic signal detection
-https://pmc.ncbi.nlm.nih.gov/articles/PMC5843167/
-*/
-
 const tableLine = (name, value) => {return '<tr><td>' + name + '</td><td>' + value + '</td></tr>';};
 
 document.addEventListener('DOMContentLoaded', () => {
