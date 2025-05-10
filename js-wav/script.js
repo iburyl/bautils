@@ -188,10 +188,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Generate spectrogram
             sharedData = generateSpectrogram(params.fftSize, params.hopSize, signalWindow, params, audioBuffer, audioContext);
-            const {specData, timeData, freqData, peak} = sharedData;
+            const {specData, timeData, freqData, peak, foundPeaks} = sharedData;
 
             // Draw spectrogram with axes
-            const {image, specCanvasWindow} = drawSpectrogram(specData, timeData, freqData, signalWindow, params.minE, ctx);
+            const {image, specCanvasWindow} = drawSpectrogram(specData, timeData, freqData, foundPeaks, signalWindow, params.minE, ctx);
 
             let summary = '<table>';
             summary += tableLine('Source:', file.name);
@@ -212,10 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     '<table>' +
                     tableLine(name, ''  ) + 
                     tableLine('Time:',  (signalWindow.start + peakData.box.left_10 * framesPerSec).toFixed(4) + '-' + (signalWindow.start + peakData.box.right_10 * framesPerSec).toFixed(4) + ' s' ) + 
-                    tableLine('Next peak:', (peakData.box.next_peak>=0)?((signalWindow.start + peakData.box.next_peak * framesPerSec).toFixed(4) + ' s'):'-') +
                     tableLine('Duration:',  ((peakData.box.right_10 - peakData.box.left_10) * framesPerSec).toFixed(4) + ' s  '  ) + 
                     tableLine('Start to peak mag.:',  ( (peakData.frame - peakData.box.left_10) / (peakData.box.right_10 - peakData.box.left_10) ).toFixed(2)  ) + 
-                    tableLine('Peak to next peak:',  (peakData.box.next_peak>=0)?(((peakData.box.next_peak - peakData.frame) * framesPerSec).toFixed(4) + ' s'):'-'  ) + 
                     tableLine('Left Freq:', (peakData.box.left_10_freq / numBins * signalWindow.sampleRate / 1000).toFixed(1) + ' KHz  ' ) + 
                     tableLine('Peak Freq:', (peakData.bin / numBins * signalWindow.sampleRate / 1000).toFixed(1) + ' KHz  '  ) + 
                     tableLine('Right Freq:', (peakData.box.right_10_freq / numBins * signalWindow.sampleRate / 1000).toFixed(1) + ' KHz  ' ) + 

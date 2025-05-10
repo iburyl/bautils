@@ -1,4 +1,4 @@
-function magnitudeToRGBDark(mag, minMag, maxMag) {
+function magnitudeToRGBDark(mag, minMag, maxMag, opacity) {
     /*
     let gradient = [
         {point: 0   ,r:255,g:255,b:255},
@@ -26,5 +26,9 @@ function magnitudeToRGBDark(mag, minMag, maxMag) {
     const g = Math.round(gradient[i-1].g + inner_point*(gradient[i].g - gradient[i-1].g));
     const b = Math.round(gradient[i-1].b + inner_point*(gradient[i].b - gradient[i-1].b));
     
-    return `rgb(${r},${g},${b})`;
+    if(!opacity) return `rgb(${r} ${g} ${b})`;
+
+    const css_opac = opacity.toFixed(2);
+
+    return `rgb(${r} ${g} ${b} / ${css_opac})`;
 }

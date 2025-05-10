@@ -110,7 +110,7 @@ function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer
         for(let j=searchFirstBin;j<searchLastBin;j++)
         {
             frameHighPeak = Math.max(magnitude[j], frameHighPeak);
-            if(magnitude[j] > searchFreqPeak.value   ) searchFreqPeak    = {value:magnitude[j], frame:count, bin:j};
+            if(magnitude[j] > searchFreqPeak.value) searchFreqPeak = {value:magnitude[j], frame:count, bin:j};
         }
 
         spectrogramData.push(magnitude);
@@ -122,129 +122,9 @@ function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer
         count++;
     }
 
-    let sortedSearchPeakTime = searchPeakTime.toSorted((a, b) => a - b);
+    let foundCalls = searchForPeaks2(searchPeakTime, spectrogramData, searchFirstBin, searchLastBin);
 
-    let quamntiles = [];
-    for(let i=0; i<=10; i++)
-    {
-        quamntiles[i] = sortedSearchPeakTime[ Math.round(i/10 * (sortedSearchPeakTime.length - 1)) ];
-    }
-    let callThreshold = sortedSearchPeakTime[ Math.round(0.5 * (sortedSearchPeakTime.length - 1)) ] * 10;
-
-    let foundCalls = [];
-    let callCount = 0;
-    let minWindowSize = 20;
-    let previous = false;
-    let currentWindowSize = minWindowSize;
-    const secPerFrame = signalWindow.duration / searchPeakTime.length;
-    let expMovingAverage = searchPeakTime[0];
-    const expMovingAverageCoeff = 0.2;
-    for(let i=0; i<searchPeakTime.length; i++)
-    {
-        expMovingAverage = expMovingAverage * (1-expMovingAverageCoeff) + searchPeakTime[i] * expMovingAverageCoeff;
-        let current = expMovingAverage > callThreshold;
-        if(currentWindowSize < minWindowSize) {currentWindowSize++; continue;}
-
-        if(!previous && current)
-        {
-            currentWindowSize = 1;
-            callCount++;
-        }
-        else if(previous && current)
-        {
-            currentWindowSize++;
-        }
-        else if(previous && !current)
-        {
-            foundCalls.push([signalWindow.start + (i-currentWindowSize) * secPerFrame, signalWindow.start + i * secPerFrame, currentWindowSize]);
-            currentWindowSize = 1;
-        }
-        else if(!previous && !current)
-        {
-            currentWindowSize++;
-        }
-
-        previous = current;
-    }
-    console.log(callCount);
-    console.log(foundCalls);
-
-
-    function getBox(peakStat, sequence, spectrogramData, lowBin, upperBin) {
-        let startFrame = peakStat.frame;
-        let startBin = peakStat.bin;
-        let value = peakStat.value;
-
-        const numFrames = sequence.length;
-        const numBins   = spectrogramData[0].length;
-
-        let binWindow=0;
-        for(let j=startBin; j<upperBin; j++) if(spectrogramData[startFrame][j] < value*0.1) { binWindow += j-startBin; break; }
-        for(let j=startBin; j>=lowBin; j--) if(spectrogramData[startFrame][j] < value*0.1) { binWindow += startBin-j; break; }
-
-        function detectRidge(frame, lastBin, binWindow, numBins, spectrogramData)
-        {
-            let binWindowStart = Math.max(lastBin-binWindow, 0);
-            let binWindowStop  = Math.min(lastBin+binWindow, numBins);
-
-            let inFramePeakBin = binWindowStart;
-            let inFramePeakValue = spectrogramData[frame][inFramePeakBin];
-            for(let j=binWindowStart; j<binWindowStop; j++) if(spectrogramData[frame][j] > inFramePeakValue) {inFramePeakValue=spectrogramData[frame][j]; inFramePeakBin=j;}
-
-            return {peakBin:inFramePeakBin, peakValue:inFramePeakValue};
-        }
-
-        let right_10;
-        let right_10_freq_bin;
-        let left_10;
-        let left_10_freq_bin;
-        let lastBin = startBin;
-        for(let i=startFrame; i<numFrames; i++)
-        {
-            const {peakBin, peakValue} = detectRidge(i, lastBin, binWindow, numBins, spectrogramData);
-            lastBin = peakBin;
-            if(peakValue < value*0.05 || i==numFrames-1)
-            {
-                right_10 = i;
-                right_10_freq_bin = peakBin;
-                break;
-            }
-        }
-        lastBin = startBin;
-        for(let i=startFrame; i>=0; i--)
-        {
-            const {peakBin, peakValue} = detectRidge(i, lastBin, binWindow, numBins, spectrogramData);
-            lastBin = peakBin;
-            if(peakValue < value*0.05 || i==0)
-            {
-                left_10 = i;
-                left_10_freq_bin = peakBin;
-                break;
-            }
-        }
-
-        function findNextPeakFrame(leftFrame, rightFrame, peakBin, numFrames, spectrogramData)
-        {
-            let skip = rightFrame - leftFrame;
-            if(rightFrame + skip >= numFrames) return -1;
-            let noisePeak = spectrogramData[rightFrame+1][peakBin];
-            for(let i=rightFrame+1; i<rightFrame + skip; i++) noisePeak = Math.max(noisePeak, spectrogramData[i][peakBin]);
-
-            for(let i=rightFrame + skip; i<numFrames; i++) if(spectrogramData[i][peakBin] > noisePeak * 3) return i;
-            return -1;
-        }
-
-        let nextPeakFrame = findNextPeakFrame(left_10, right_10, startBin, numFrames, spectrogramData);
-
-        let len = right_10 - left_10;
-        if( len < numFrames / 20 ) len = Math.ceil(numFrames / 100);
-        let leftBound = Math.max(0, left_10 - len*3);
-        let rightBound = Math.min(sequence.length-1, right_10 + len*3);
-        
-        return {left:leftBound, right:rightBound, left_10:left_10, right_10: right_10, left_10_freq:left_10_freq_bin, right_10_freq:right_10_freq_bin, next_peak: nextPeakFrame};
-    }
-
-    searchFreqPeak.box    = getBox(searchFreqPeak, searchPeakTime, spectrogramData, searchFirstBin, searchLastBin); 
+    searchFreqPeak.box = getBox(searchFreqPeak, spectrogramData, searchFirstBin, searchLastBin); 
     
     let minInFreq;
     let maxInFreq;
@@ -259,6 +139,318 @@ function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer
         specData:{data: spectrogramData, maxValue: maxSpectrogramValue},
         timeData:{data: peakTime, minValue: minInTime, maxValue: maxInTime},
         freqData:{data: peakFreq, minValue: minInFreq, maxValue: maxInFreq},
-        peak: searchFreqPeak
+        peak: searchFreqPeak,
+        foundPeaks: foundCalls
     };
+}
+
+function searchForPeaks2(searchPeakTime, spectrogramData, lowBin, upperBin) {
+    let sortedSearchPeakTime = searchPeakTime.toSorted((a, b) => a - b);
+
+    let quamntiles = [];
+    for(let i=0; i<=10; i++)
+    {
+        quamntiles[i] = sortedSearchPeakTime[ Math.round(i/10 * (sortedSearchPeakTime.length - 1)) ];
+    }
+    let magNoiseThreshold = sortedSearchPeakTime[ Math.round(0.5 * (sortedSearchPeakTime.length - 1)) ] * 10;
+
+    let foundCalls = [];
+    const minWindowSize = 20;
+    let expMovingAverage = searchPeakTime[0];
+    const expMovingAverageCoeff = 0.2;
+
+    for(let i=0; i<searchPeakTime.length; i++)
+    {
+        expMovingAverage = expMovingAverage * (1-expMovingAverageCoeff) + searchPeakTime[i] * expMovingAverageCoeff;
+        let current = expMovingAverage > magNoiseThreshold;
+        if(!current) continue;
+
+        let framePeakValue = spectrogramData[i][lowBin];
+        let framePeakBin = lowBin;
+        for(let j=lowBin; j<upperBin; j++) if(spectrogramData[i][j] > framePeakValue) {framePeakBin=j; framePeakValue=spectrogramData[i][j];};
+
+        let box = getBox2({frame:i, bin:framePeakBin, value:framePeakValue}, spectrogramData, lowBin, upperBin, foundCalls[foundCalls.length-1], magNoiseThreshold);
+
+        if(box.minFreq_10 < lowBin) continue;
+        
+        box.start = box.left_10;
+        box.stop  = box.right_10;    
+        foundCalls.push(box);
+
+        i = box.stop+1;
+    }
+
+    return foundCalls;
+}
+
+/*
+function searchForPeaks(searchPeakTime, spectrogramData, lowBin, upperBin) {
+    let sortedSearchPeakTime = searchPeakTime.toSorted((a, b) => a - b);
+
+    let quamntiles = [];
+    for(let i=0; i<=10; i++)
+    {
+        quamntiles[i] = sortedSearchPeakTime[ Math.round(i/10 * (sortedSearchPeakTime.length - 1)) ];
+    }
+    let magNoiseThreshold = sortedSearchPeakTime[ Math.round(0.5 * (sortedSearchPeakTime.length - 1)) ] * 10;
+
+    let foundCalls = [];
+    let callCount = 0;
+    const minWindowSize = 20;
+    let previous = false;
+    let currentWindowSize = minWindowSize;
+    let expMovingAverage = searchPeakTime[0];
+    const expMovingAverageCoeff = 0.2;
+    for(let i=0; i<searchPeakTime.length; i++)
+    {
+        expMovingAverage = expMovingAverage * (1-expMovingAverageCoeff) + searchPeakTime[i] * expMovingAverageCoeff;
+        let current = expMovingAverage > magNoiseThreshold;
+        if(currentWindowSize < minWindowSize) {currentWindowSize++; continue;}
+
+        if(previous == current)
+        {
+            currentWindowSize++;
+        }
+        else if(!previous && current)
+        {
+            currentWindowSize = 1;
+            callCount++;
+        }
+        else if(previous && !current)
+        {
+            foundCalls.push({start: i-currentWindowSize, stop: i, duration: currentWindowSize});
+            currentWindowSize = 1;
+        }
+
+        previous = current;
+    }
+
+    return foundCalls;
+}
+*/
+
+function getBox(peakStat, spectrogramData, lowBin, upperBin, prevBox, magNoiseThreshold) {
+    let startFrame = peakStat.frame;
+    let startBin = peakStat.bin;
+    let value = peakStat.value;
+    magNoiseThreshold = (magNoiseThreshold)?magNoiseThreshold:0;
+
+    const numFrames = spectrogramData.length;
+    const numBins   = spectrogramData[0].length;
+
+    //let binWindow=Math.ceil((upperBin-lowBin)/20);
+    //let binWindow=Math.ceil((upperBin-lowBin)/10);
+    //let binWindow=Math.min(Math.ceil((upperBin-lowBin)/10),5);
+    let binWindow=2;
+    //for(let j=startBin; j<upperBin; j++) if(spectrogramData[startFrame][j] < value*0.1) { binWindow += j-startBin; break; }
+    //for(let j=startBin; j>=lowBin; j--) if(spectrogramData[startFrame][j] < value*0.1) { binWindow += startBin-j; break; }
+    //console.log(binWindow);
+
+    function detectRidge(frame, lastBin, binWindow, numBins, spectrogramData)
+    {
+        let binWindowStart = Math.max(lastBin-binWindow, 0);
+        let binWindowStop  = Math.min(lastBin+binWindow, numBins);
+
+        let inFramePeakBin = binWindowStart;
+        let inFramePeakValue = spectrogramData[frame][inFramePeakBin];
+        for(let j=binWindowStart; j<binWindowStop; j++) if(spectrogramData[frame][j] > inFramePeakValue) {inFramePeakValue=spectrogramData[frame][j]; inFramePeakBin=j;}
+        if(inFramePeakBin==binWindowStart)
+        {
+            while(inFramePeakBin>0)
+            {
+                if(spectrogramData[frame][inFramePeakBin-1] < inFramePeakValue) break;
+                inFramePeakBin -= 1;
+                inFramePeakValue=spectrogramData[frame][inFramePeakBin];
+            }
+        }
+        if(inFramePeakBin==binWindowStop)
+        {
+            while(inFramePeakBin<numBins-1)
+            {
+                if(spectrogramData[frame][inFramePeakBin+1] < inFramePeakValue) break;
+                inFramePeakBin += 1;
+                inFramePeakValue=spectrogramData[frame][inFramePeakBin];
+            }
+        }
+
+        return {peakBin:inFramePeakBin, peakValue:inFramePeakValue};
+    }
+
+    let rightPath = [];
+    let leftPath = [];
+    let maxF_10 = startBin;
+    let minF_10 = startBin;
+    let right_10 = startFrame;
+    let right_10_freq_bin = startBin;
+    let left_10 = startFrame;
+    let left_10_freq_bin = startBin;
+    let lastBin = startBin;
+    for(let i=startFrame; i<numFrames; i++)
+    {
+        const {peakBin, peakValue} = detectRidge(i, lastBin, binWindow, numBins, spectrogramData);
+        value = Math.max(peakValue, value);
+        lastBin = peakBin;
+        if(peakValue < Math.max(value*0.05, magNoiseThreshold) || i==numFrames-1)
+        {
+            right_10 = i;
+            right_10_freq_bin = peakBin;
+            break;
+        }
+        rightPath.push({bin :peakBin, frame:i, value:peakValue});
+        maxF_10 = Math.max(maxF_10, peakBin);
+        minF_10 = Math.min(minF_10, peakBin);
+    }
+    lastBin = startBin;
+
+    const prevBox_minBin = (prevBox)?Math.min(prevBox.left_10_freq, prevBox.right_10_freq):0;
+    const prevBox_maxBin = (prevBox)?Math.max(prevBox.left_10_freq, prevBox.right_10_freq):0;
+    for(let i=startFrame-1; i>=0; i--)
+    {
+        const {peakBin, peakValue} = detectRidge(i, lastBin, binWindow, numBins, spectrogramData);
+        value = Math.max(peakValue, value);
+        lastBin = peakBin;
+        if(peakValue < Math.max(value*0.05, magNoiseThreshold) || i==0)
+        {
+            left_10 = i;
+            left_10_freq_bin = peakBin;
+            break;
+        }
+        if(prevBox && prevBox.right_10 >= i && peakBin > prevBox_minBin && peakBin < prevBox_maxBin)
+        {
+            left_10 = i;
+            left_10_freq_bin = peakBin;
+            break;
+        }
+        leftPath.push({bin:peakBin, frame:i, value:peakValue});
+        maxF_10 = Math.max(maxF_10, peakBin);
+        minF_10 = Math.min(minF_10, peakBin);
+    }
+
+    let len = right_10 - left_10;
+    if( len < numFrames / 20 ) len = Math.ceil(numFrames / 100);
+    let leftBound = Math.max(0, left_10 - len*3);
+    let rightBound = Math.min(numFrames-1, right_10 + len*3);
+
+    return {
+        left:leftBound, right:rightBound,
+        minFreq_10: minF_10, maxFreq_10: maxF_10,
+        left_10:left_10, right_10: right_10,
+        left_10_freq:left_10_freq_bin, right_10_freq:right_10_freq_bin,
+        leftPath:leftPath, rightPath:rightPath };
+}
+
+
+function getBox2(peakStat, spectrogramData, lowBin, upperBin, prevBox, magNoiseThreshold) {
+    let startFrame = peakStat.frame;
+    let startBin = peakStat.bin;
+    let value = peakStat.value;
+    magNoiseThreshold = (magNoiseThreshold)?magNoiseThreshold:0;
+
+    const numFrames = spectrogramData.length;
+    const numBins   = spectrogramData[0].length;
+
+    //let binWindow=Math.ceil((upperBin-lowBin)/20);
+    //let binWindow=Math.ceil((upperBin-lowBin)/10);
+    //let binWindow=Math.min(Math.ceil((upperBin-lowBin)/10),5);
+    let binWindow=1;
+    //for(let j=startBin; j<upperBin; j++) if(spectrogramData[startFrame][j] < value*0.1) { binWindow += j-startBin; break; }
+    //for(let j=startBin; j>=lowBin; j--) if(spectrogramData[startFrame][j] < value*0.1) { binWindow += startBin-j; break; }
+    //console.log(binWindow);
+
+    function detectRidge(lastFrame, lastBin, binWindow, lastYMove, spectrogramData)
+    {
+        console.log(lastFrame, lastBin);
+        const numFrames = spectrogramData.length;
+        const numBins = spectrogramData[0].length;
+
+        let frame = lastFrame;
+
+        let binWindowStart = Math.max((lastYMove<0)?lastBin+1:lastBin-binWindow, 0);
+        let binWindowStop  = Math.min((lastYMove>0)?lastBin-1:lastBin+binWindow, numBins-1);
+
+        console.log(binWindowStart, binWindowStop);
+
+        let maxFrame = lastFrame;
+        let maxBin   = binWindowStart;
+        let maxValue = spectrogramData[maxFrame][maxBin];
+
+        for(let j=binWindowStart; j<=binWindowStop; j++) if(spectrogramData[lastFrame][j] > maxValue && j!=lastBin) {maxValue=spectrogramData[lastFrame][j]; maxBin=j;}
+
+        if(lastFrame == numFrames-1) return {frame:maxFrame, bin:maxBin, value:maxValue, lastYMove:(maxFrame==lastFrame)?maxBin-lastBin:0};
+        
+        binWindowStart = Math.max(lastBin-binWindow, 0);
+        binWindowStop  = Math.min(lastBin+binWindow, numBins-1);
+
+        for(let j=binWindowStart; j<=binWindowStop; j++) if(spectrogramData[lastFrame+1][j] > maxValue) {maxValue=spectrogramData[lastFrame+1][j]; maxFrame=lastFrame+1; maxBin=j;}
+
+        return {frame:maxFrame, bin:maxBin, value:maxValue, lastYMove:(maxFrame==lastFrame)?maxBin-lastBin:0};
+    }
+
+    let rightPath = [];
+    let leftPath = [];
+    let maxF_10 = startBin;
+    let minF_10 = startBin;
+    let right_10 = startFrame;
+    let right_10_freq_bin = startBin;
+    let left_10 = startFrame;
+    let left_10_freq_bin = startBin;
+    //for(let i=startFrame; i<numFrames; i++)
+    let nextPoint = {frame:startFrame, bin:startBin, value:value, lastYMove:0};
+    
+    for(let maxPoints=5; maxPoints>0; maxPoints--)
+    {
+        console.log(nextPoint);
+        nextPoint = detectRidge(nextPoint.frame, nextPoint.bin, binWindow, nextPoint.lastYMove, spectrogramData);
+        value = Math.max(nextPoint.value, value);
+        if(nextPoint.value < Math.max(value*0.05, magNoiseThreshold) || nextPoint.frame==numFrames-1)
+        {
+            right_10 = nextPoint.frame;
+            right_10_freq_bin = nextPoint.bin;
+            break;
+        }
+        rightPath.push({bin:nextPoint.bin, frame:nextPoint.frame, value:nextPoint.value});
+        maxF_10 = Math.max(maxF_10, nextPoint.value);
+        minF_10 = Math.min(minF_10, nextPoint.value);
+        //console.log(nextPoint);
+        //break;
+    }
+
+    /*
+    lastBin = startBin;
+    const prevBox_minBin = (prevBox)?Math.min(prevBox.left_10_freq, prevBox.right_10_freq):0;
+    const prevBox_maxBin = (prevBox)?Math.max(prevBox.left_10_freq, prevBox.right_10_freq):0;
+    for(let i=startFrame-1; i>=0; i--)
+    {
+        const {peakBin, peakValue} = detectRidge(i, lastBin, binWindow, numBins, spectrogramData);
+        value = Math.max(peakValue, value);
+        lastBin = peakBin;
+        if(peakValue < Math.max(value*0.05, magNoiseThreshold) || i==0)
+        {
+            left_10 = i;
+            left_10_freq_bin = peakBin;
+            break;
+        }
+        if(prevBox && prevBox.right_10 >= i && peakBin > prevBox_minBin && peakBin < prevBox_maxBin)
+        {
+            left_10 = i;
+            left_10_freq_bin = peakBin;
+            break;
+        }
+        leftPath.push({bin:peakBin, frame:i, value:peakValue});
+        maxF_10 = Math.max(maxF_10, peakBin);
+        minF_10 = Math.min(minF_10, peakBin);
+    }
+    */
+
+    let len = right_10 - left_10;
+    if( len < numFrames / 20 ) len = Math.ceil(numFrames / 100);
+    let leftBound = Math.max(0, left_10 - len*3);
+    let rightBound = Math.min(numFrames-1, right_10 + len*3);
+
+    return {
+        left:leftBound, right:rightBound,
+        minFreq_10: minF_10, maxFreq_10: maxF_10,
+        left_10:left_10, right_10: right_10,
+        left_10_freq:left_10_freq_bin, right_10_freq:right_10_freq_bin,
+        leftPath:leftPath, rightPath:rightPath };
 }
