@@ -21,6 +21,11 @@
             flex-direction: column;
             gap: 20px;
         }
+        .tabs-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
         .input_list {
             display: flex;
             gap: 20px;
@@ -40,6 +45,55 @@
         }
         button:hover {
             background-color: #45a049;
+            color: white;
+        }
+        /* Tab styles */
+        .tabs {
+            display: flex;
+            gap: 2px;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 0px;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            background-color: #f1f1f1;
+            color: black;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+        }
+        .tab-button.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        .tab-button.active:hover {
+            color: black;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-layout {
+            display: flex;
+            gap: 20px;
+        }
+        .tab-inputs {
+            flex: 1;
+            min-width: 0;
+        }
+        .tab-text {
+            flex: 1;
+            min-width: 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -74,28 +128,65 @@
             <button id="move_right">&#x25B6;</button>
             <button id="move_right_fast">&#x25B6;&#x25B6;</button>
         </div>
-        <div class="input_list">
-            <div>Start (s)<br /><input type="text" id="start"></div>
-            <div>Stop (s)<br /><input type="text" id="stop"></div>
-            <div>Min Freq (KHz)<br /><input type="text" id="min_freq"></div>
-            <div>Max Freq (KHz)<br /><input type="text" id="max_freq"></div>
-            
-        </div>
-        <div class="input_list">
-            <div>FFT<br /><input type="text" id="fft"></div>
-            <div>Hop size<br /><input type="text" id="hop"></div>
-            <div>Min magnitude log<br /><input type="text" id="min_e"></div>
-            <div>Kaiser Beta<br /><input type="text" id="kaiser_beta"></div>
-        </div>
-        <div class="input_list">
-            <div>Search Min Freq (KHz)<br /><input type="text" id="peak_min_freq"></div>
-            <div>Search Max Freq (KHz)<br /><input type="text" id="peak_max_freq"></div>
-        </div>
-        <div class="input_list">
-            <div id="info"></div>
-            <div id="peak_stats"></div>                
-        </div>
 
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab-button active" data-tab="main">Main</button>
+                <button class="tab-button" data-tab="peak-stats">Peak Stats</button>
+                <button class="tab-button" data-tab="sequences">Sequences</button>
+            </div>
+
+            <!-- Main Tab -->
+            <div id="main" class="tab-content active">
+                <div class="tab-layout">
+                    <div class="tab-inputs">
+                        <div class="input_list">
+                            <div>Start (s)<br /><input type="text" id="start"></div>
+                            <div>Stop (s)<br /><input type="text" id="stop"></div>
+                            <div>Min Freq (KHz)<br /><input type="text" id="min_freq"></div>
+                            <div>Max Freq (KHz)<br /><input type="text" id="max_freq"></div>
+                        </div>
+                        <div class="input_list">
+                            <div>FFT<br /><input type="text" id="fft"></div>
+                            <div>Hop size<br /><input type="text" id="hop"></div>
+                            <div>Min magnitude log<br /><input type="text" id="min_e"></div>
+                            <div>Kaiser Beta<br /><input type="text" id="kaiser_beta"></div>
+                        </div>
+                    </div>
+                    <div class="tab-text">
+                        <div id="info"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Peak Stats Tab -->
+            <div id="peak-stats" class="tab-content">
+                <div class="tab-layout">
+                    <div class="tab-inputs">
+                        <div class="input_list">
+                            <div>Search Min Freq (KHz)<br /><input type="text" id="peak_min_freq"></div>
+                            <div>Search Max Freq (KHz)<br /><input type="text" id="peak_max_freq"></div>
+                        </div>
+                    </div>
+                    <div class="tab-text">
+                        <div id="peak_stats"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sequences Tab -->
+            <div id="sequences" class="tab-content">
+                <div class="tab-layout">
+                    <div class="tab-inputs">
+                        <!-- Empty for now -->
+                    </div>
+                    <div class="tab-text">
+                        <!-- Empty for now -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <script src="js-depends/fft.js"></script>
     <script src="js-wav/utils-draw.js"></script>
@@ -105,5 +196,19 @@
     <script src="js-wav/draw-axis.js"></script>
     <script src="js-wav/draw-graph.js"></script>
     <script src="js-wav/script.js"></script>
+    <script>
+        // Tab functionality
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons and contents
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // Add active class to clicked button and corresponding content
+                button.classList.add('active');
+                document.getElementById(button.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
 </body>
 </html> 
