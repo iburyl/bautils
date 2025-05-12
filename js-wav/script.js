@@ -85,6 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let sharedData;
 
     audioElement.addEventListener('timeupdate', () => {
+        
+        drawPlaybackLine(audioElement.currentTime, sharedSignalWindow, sharedSpecCanvasWindow, sharedImage, ctx);
+        /*
         ctx.putImageData(sharedImage, 0, 0);
 
         ctx.strokeStyle = '#000';
@@ -99,8 +102,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.moveTo(currentX, sharedSpecCanvasWindow.y);
         ctx.lineTo(currentX, sharedSpecCanvasWindow.y - sharedSpecCanvasWindow.height);
         ctx.stroke();
+        */
 
-        if(currentTime > sharedSignalWindow.start + sharedSignalWindow.duration)
+        if(audioElement.currentTime > sharedSignalWindow.start + sharedSignalWindow.duration)
         {
             audioElement.pause();
             audioElement.currentTime = sharedSignalWindow.start;

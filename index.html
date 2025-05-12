@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BioAcoustics Utilities - BAutils.app</title>
+    <title>bansheelab.app - bioacoustics Utilities</title>
     <style>
+        html {
+            overflow-y: scroll;
+        }
         body {
             font-family: Arial, sans-serif;
             max-width: 1600px;
@@ -34,6 +37,10 @@
         canvas {
             border: 1px solid #ccc;
             background-color: #f5f5f5;
+        }
+        .buttons_line {
+            display: flex;
+            gap: 30px;
         }
         button {
             padding: 5px 5px;
@@ -117,17 +124,23 @@
         <button id="ratio_max">max</button>
         </div>
         <canvas id="mainCanvas"></canvas>
-        <div>
+        <div class="buttons_line">
+        <div class="buttons_group">
             <button id="move_left_fast">&#x25C0;&#x25C0;</button>
             <button id="move_left">&#x25C0;</button>
-            <button id="updateButton">Update</button>
             <button id="zoom_in">Zoom in</button>
             <button id="zoom_peak">Zoom in peak</button>
             <button id="zoom_out">Zoom out</button>
-            <button id="resetButton">Reset</button>
             <button id="move_right">&#x25B6;</button>
             <button id="move_right_fast">&#x25B6;&#x25B6;</button>
         </div>
+        <div class="buttons_group">
+            <button id="updateButton">Update</button>
+            <button id="resetButton">Reset</button>
+        </div>
+        </div>
+
+
 
         <!-- Tabs -->
         <div class="tabs-container">
@@ -193,8 +206,12 @@
     <script src="js-wav/utils-math.js"></script>
     <script src="js-wav/utils-wav.js"></script>
     <script src="js-wav/analysis.js"></script>
+    <script src="js-wav/analysis-peak-info.js"></script>
+    <script src="js-wav/analysis-sequencies.js"></script>
     <script src="js-wav/draw-axis.js"></script>
     <script src="js-wav/draw-graph.js"></script>
+    <script src="js-wav/draw-overlay-peaks.js"></script>
+    <script src="js-wav/draw-playback.js"></script>
     <script src="js-wav/script.js"></script>
     <script>
         // Tab functionality
