@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>bansheelab.app - bioacoustics utilities</title>
-    <link rel="icon" href="/img/favicon.png" type="image/png">
+    <link rel="icon" href="img/favicon.png" type="image/png">
     <style>
         html {
             overflow-y: scroll;
@@ -103,6 +103,12 @@
             background-color: #f9f9f9;
             border-radius: 4px;
         }
+        .tabs-container input, select {
+            width: 160px;
+            box-sizing: border-box;
+            padding: 2px;
+            font: inherit;
+        }
     </style>
 </head>
 <body>
@@ -162,7 +168,17 @@
                             <div>Max Freq (KHz)<br /><input type="text" id="max_freq"></div>
                         </div>
                         <div class="input_list">
-                            <div>FFT<br /><input type="text" id="fft"></div>
+                            <div>FFT<br /><select id="fft" list="fft-values">
+                              <option value="">auto</option>
+                              <option value="64">64</option>
+                              <option value="128">128</option>
+                              <option value="256">256</option>
+                              <option value="512">512</option>
+                              <option value="1024">1024</option>
+                              <option value="2048">2048</option>
+                              <option value="4096">4096</option>
+                              <option value="8192">8192</option>
+                            </select></div>
                             <div>Hop size<br /><input type="text" id="hop"></div>
                             <div>Min magnitude log<br /><input type="text" id="min_e"></div>
                             <div>Kaiser Beta<br /><input type="text" id="kaiser_beta"></div>
@@ -206,7 +222,7 @@
     <script src="js-wav/utils-draw.js"></script>
     <script src="js-wav/utils-math.js"></script>
     <script src="js-wav/utils-wav.js"></script>
-    <script src="js-wav/analysis.js"></script>
+    <script src="js-wav/analysis-main.js"></script>
     <script src="js-wav/analysis-peak-info.js"></script>
     <script src="js-wav/analysis-sequencies.js"></script>
     <script src="js-wav/draw-axis.js"></script>
@@ -215,18 +231,6 @@
     <script src="js-wav/draw-playback.js"></script>
     <script src="js-wav/script.js"></script>
     <script>
-        // Tab functionality
-        document.querySelectorAll('.tab-button').forEach(button => {
-            button.addEventListener('click', () => {
-                // Remove active class from all buttons and contents
-                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                
-                // Add active class to clicked button and corresponding content
-                button.classList.add('active');
-                document.getElementById(button.dataset.tab).classList.add('active');
-            });
-        });
     </script>
 </body>
 </html> 

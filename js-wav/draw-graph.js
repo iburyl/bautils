@@ -111,8 +111,6 @@ function drawSpectrogram(specData, timeData, freqData, foundPeaks, signalWindow,
     const AXIS_X_TIME_PADDING = 60;
     const AXIS_Y_FREQ_PADDING = 60;
 
-    //const width = mainCanvas.width;
-    //const height = mainCanvas.height;
     const width = ctx.canvas.width;
     const height = ctx.canvas.height;
     const numFrames = specData.data.length;

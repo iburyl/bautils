@@ -7,13 +7,7 @@ function getBox(peakStat, spectrogramData, lowBin, upperBin, prevBox, magNoiseTh
     const numFrames = spectrogramData.length;
     const numBins   = spectrogramData[0].length;
 
-    //let binWindow=Math.ceil((upperBin-lowBin)/20);
-    //let binWindow=Math.ceil((upperBin-lowBin)/10);
-    //let binWindow=Math.min(Math.ceil((upperBin-lowBin)/10),5);
     let binWindow=2;
-    //for(let j=startBin; j<upperBin; j++) if(spectrogramData[startFrame][j] < value*0.1) { binWindow += j-startBin; break; }
-    //for(let j=startBin; j>=lowBin; j--) if(spectrogramData[startFrame][j] < value*0.1) { binWindow += startBin-j; break; }
-    //console.log(binWindow);
 
     function detectRidge(frame, lastBin, binWindow, numBins, spectrogramData)
     {
@@ -22,7 +16,12 @@ function getBox(peakStat, spectrogramData, lowBin, upperBin, prevBox, magNoiseTh
 
         let inFramePeakBin = binWindowStart;
         let inFramePeakValue = spectrogramData[frame][inFramePeakBin];
-        for(let j=binWindowStart; j<binWindowStop; j++) if(spectrogramData[frame][j] > inFramePeakValue) {inFramePeakValue=spectrogramData[frame][j]; inFramePeakBin=j;}
+        
+        // check +/- binWIndow and find next peak
+        for(let j=binWindowStart; j<=binWindowStop; j++) if(spectrogramData[frame][j] > inFramePeakValue) {inFramePeakValue=spectrogramData[frame][j]; inFramePeakBin=j;}
+        
+        // if it went out of small search window, find further for local maximum,
+        // following outside of the window, while it monotonically increses the value
         if(inFramePeakBin==binWindowStart)
         {
             while(inFramePeakBin>0)
@@ -95,13 +94,10 @@ function getBox(peakStat, spectrogramData, lowBin, upperBin, prevBox, magNoiseTh
         minF_10 = Math.min(minF_10, peakBin);
     }
 
-    let len = right_10 - left_10;
-    if( len < numFrames / 20 ) len = Math.ceil(numFrames / 100);
-    let leftBound = Math.max(0, left_10 - len*3);
-    let rightBound = Math.min(numFrames-1, right_10 + len*3);
-
     return {
-        left:leftBound, right:rightBound,
+        leftFrame:left_10, rightFrame:right_10,
+        minBin: minF_10, maxBin: maxF_10,
+
         minFreq_10: minF_10, maxFreq_10: maxF_10,
         left_10:left_10, right_10: right_10,
         left_10_freq:left_10_freq_bin, right_10_freq:right_10_freq_bin,
@@ -128,7 +124,7 @@ function getBox2(peakStat, spectrogramData, lowBin, upperBin, prevBox, magNoiseT
 
     function detectRidge(lastFrame, lastBin, binWindow, lastYMove, spectrogramData)
     {
-        console.log(lastFrame, lastBin);
+        //console.log(lastFrame, lastBin);
         const numFrames = spectrogramData.length;
         const numBins = spectrogramData[0].length;
 
@@ -137,7 +133,7 @@ function getBox2(peakStat, spectrogramData, lowBin, upperBin, prevBox, magNoiseT
         let binWindowStart = Math.max((lastYMove<0)?lastBin+1:lastBin-binWindow, 0);
         let binWindowStop  = Math.min((lastYMove>0)?lastBin-1:lastBin+binWindow, numBins-1);
 
-        console.log(binWindowStart, binWindowStop);
+        //console.log(binWindowStart, binWindowStop);
 
         let maxFrame = lastFrame;
         let maxBin   = binWindowStart;
@@ -168,7 +164,7 @@ function getBox2(peakStat, spectrogramData, lowBin, upperBin, prevBox, magNoiseT
     
     for(let maxPoints=5; maxPoints>0; maxPoints--)
     {
-        console.log(nextPoint);
+        //console.log(nextPoint);
         nextPoint = detectRidge(nextPoint.frame, nextPoint.bin, binWindow, nextPoint.lastYMove, spectrogramData);
         value = Math.max(nextPoint.value, value);
         if(nextPoint.value < Math.max(value*0.05, magNoiseThreshold) || nextPoint.frame==numFrames-1)
@@ -184,40 +180,11 @@ function getBox2(peakStat, spectrogramData, lowBin, upperBin, prevBox, magNoiseT
         //break;
     }
 
-    /*
-    lastBin = startBin;
-    const prevBox_minBin = (prevBox)?Math.min(prevBox.left_10_freq, prevBox.right_10_freq):0;
-    const prevBox_maxBin = (prevBox)?Math.max(prevBox.left_10_freq, prevBox.right_10_freq):0;
-    for(let i=startFrame-1; i>=0; i--)
-    {
-        const {peakBin, peakValue} = detectRidge(i, lastBin, binWindow, numBins, spectrogramData);
-        value = Math.max(peakValue, value);
-        lastBin = peakBin;
-        if(peakValue < Math.max(value*0.05, magNoiseThreshold) || i==0)
-        {
-            left_10 = i;
-            left_10_freq_bin = peakBin;
-            break;
-        }
-        if(prevBox && prevBox.right_10 >= i && peakBin > prevBox_minBin && peakBin < prevBox_maxBin)
-        {
-            left_10 = i;
-            left_10_freq_bin = peakBin;
-            break;
-        }
-        leftPath.push({bin:peakBin, frame:i, value:peakValue});
-        maxF_10 = Math.max(maxF_10, peakBin);
-        minF_10 = Math.min(minF_10, peakBin);
-    }
-    */
-
-    let len = right_10 - left_10;
-    if( len < numFrames / 20 ) len = Math.ceil(numFrames / 100);
-    let leftBound = Math.max(0, left_10 - len*3);
-    let rightBound = Math.min(numFrames-1, right_10 + len*3);
-
     return {
-        left:leftBound, right:rightBound,
+        leftFrame:left_10, rightFrame:right_10,
+        minBin: minF_10, maxBin: maxF_10,
+
+        left:left_10, right:right_10,
         minFreq_10: minF_10, maxFreq_10: maxF_10,
         left_10:left_10, right_10: right_10,
         left_10_freq:left_10_freq_bin, right_10_freq:right_10_freq_bin,

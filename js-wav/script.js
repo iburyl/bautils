@@ -6,9 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('wavFile');
     const mainCanvas = document.getElementById('mainCanvas');
     const audioElement = document.getElementById('audioPlayer');
-    const ctx = mainCanvas.getContext('2d');
+    const ctx = mainCanvas.getContext('2d', { willReadFrequently: true });
     const infoDiv = document.getElementById('info');
     const peakStatsDiv = document.getElementById('peak_stats');
+
+    const peakTab = document.getElementById('peak-stats');
 
     // Create tooltip element
     const tooltip = document.createElement('div');
@@ -74,11 +76,11 @@ document.addEventListener('DOMContentLoaded', () => {
     mainCanvas.width = 1600;
     mainCanvas.height = 500;
 
-    //mainCanvas.style.width = '750px';
-    //mainCanvas.style.height = '500px';
-
     let sharedFile;
     let sharedImage;
+    let sharedMainImage;
+    let sharedPeakImage;
+
     let sharedSpecCanvasWindow;
     let sharedSignalWindow;
     let sharedAudioBuffer;
@@ -87,22 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
     audioElement.addEventListener('timeupdate', () => {
         
         drawPlaybackLine(audioElement.currentTime, sharedSignalWindow, sharedSpecCanvasWindow, sharedImage, ctx);
-        /*
-        ctx.putImageData(sharedImage, 0, 0);
-
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 1;
-
-        const currentTime = audioElement.currentTime;
-        const duration = sharedSignalWindow.duration;
-
-        let currentX = Math.floor(sharedSpecCanvasWindow.width / duration * (currentTime-sharedSignalWindow.start)) + sharedSpecCanvasWindow.x;
-
-        ctx.beginPath();
-        ctx.moveTo(currentX, sharedSpecCanvasWindow.y);
-        ctx.lineTo(currentX, sharedSpecCanvasWindow.y - sharedSpecCanvasWindow.height);
-        ctx.stroke();
-        */
 
         if(audioElement.currentTime > sharedSignalWindow.start + sharedSignalWindow.duration)
         {
@@ -196,6 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Draw spectrogram with axes
             const {image, specCanvasWindow} = drawSpectrogram(specData, timeData, freqData, foundPeaks, signalWindow, params.minE, ctx);
+            const {overlayImage} = drawPeaksOverlay([peak],
+                getSignalWindowMapping(sampleRate, specData.data.length, specData.data[0].length, signalWindow), specCanvasWindow, image, ctx);
 
             let summary = '<table>';
             summary += tableLine('Source:', file.name);
@@ -204,7 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if(info.dataFormat) summary += tableLine('Data format:', info.dataFormat);
             if(info.bitsPerSample) summary += tableLine('Bits per sample:', info.bitsPerSample);
             if(info.numChannels) summary += tableLine('Channels:', info.numChannels);
-            summary += tableLine('Estimated FFT size:', params.estimatedFFTSize );
             summary += '</table>';
 
             infoDiv.innerHTML = summary;
@@ -226,9 +213,20 @@ document.addEventListener('DOMContentLoaded', () => {
             
             addStats('Found peak', peakStatsDiv, peak, signalWindow, timeData.data.length, params.fftSize);
 
-            sharedImage = image;
+            sharedMainImage = image;
+            sharedPeakImage = overlayImage;
             sharedSpecCanvasWindow = specCanvasWindow;
             sharedSignalWindow = signalWindow;
+
+            if(peakTab.classList.contains('active'))
+            {
+                sharedImage = sharedPeakImage;
+            }
+            else
+            {
+                sharedImage = sharedMainImage;
+            }
+            ctx.putImageData(sharedImage, 0, 0);
 
             audioElement.currentTime = signalWindow.start;
         } 
@@ -264,25 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    /*
-    document.getElementById('load').addEventListener('click', async () => {
-        //try {
-            const file = await urlToFile(document.getElementById('load').value, 'data.wav', 'application/octet-stream');
-            const audioURL = URL.createObjectURL(file);
-            document.getElementById('audioPlayer').src = audioURL;
-
-            sharedFile = file;
-
-            //showFile();
-
-        //} 
-        catch (error) {
-            console.error(error);
-            alert('Failed to load file');
-        }
-    });
-    */
-
     document.getElementById('updateButton').addEventListener('click', async () => {
         showFile();
     });
@@ -300,9 +279,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('zoom_peak').addEventListener('click', function () {
-        let framesPerSec = sharedSignalWindow.duration / sharedData.timeData.data.length;
-        paramStart.value = (sharedSignalWindow.start + sharedData.peak.box.left * framesPerSec).toFixed(4);
-        paramStop.value = (sharedSignalWindow.start + sharedData.peak.box.right * framesPerSec).toFixed(4);
+        const numFrames = sharedData.timeData.data.length;
+        const framesPerSec = sharedSignalWindow.duration / numFrames;
+        
+        let left  = sharedData.peak.box.leftFrame;
+        let right = sharedData.peak.box.rightFrame;
+
+        let len = right - left;
+        if( len < numFrames / 20 ) len = Math.ceil(numFrames / 100);
+
+        let leftBound = Math.max(0, left - len*3);
+        let rightBound = Math.min(numFrames-1, right + len*3);
+
+        paramStart.value = (sharedSignalWindow.start + leftBound * framesPerSec).toFixed(4);
+        paramStop.value = (sharedSignalWindow.start + rightBound * framesPerSec).toFixed(4);
         zeroFFT();
         showFile();
     });
@@ -369,6 +359,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('ratio_max').addEventListener('click', function () {
         setCanvasRatio(1600/500);
+    });
+
+    // Tab functionality
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons and contents
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked button and corresponding content
+            button.classList.add('active');
+            document.getElementById(button.dataset.tab).classList.add('active');
+
+            if(peakTab.classList.contains('active'))
+            {
+                sharedImage = sharedPeakImage;
+            }
+            else
+            {
+                sharedImage = sharedMainImage;
+            }
+            ctx.putImageData(sharedImage, 0, 0);
+            console.log('here');
+        });
     });
 
 }); 
