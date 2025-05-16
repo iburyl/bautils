@@ -1,3 +1,5 @@
+"use strict";
+
 function magnitudeToRGBDark(mag, minMag, maxMag, opacity) {
     /*
     let gradient = [

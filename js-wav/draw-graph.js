@@ -1,3 +1,5 @@
+"use strict";
+
 function drawSpectrogramWindow(firstFrame, lastFrame, firstBin, lastBin, specCanvasWindow, specData, minE, ctx) {
     let numFrames = lastFrame - firstFrame;
     let numBins   = lastBin - firstBin;

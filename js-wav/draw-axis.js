@@ -1,3 +1,5 @@
+"use strict";
+
 function drawTimeAxisX(signalWindow, specCanvasWindow, tickLen, labelPadding, ctx) {
     // X-axis
     ctx.beginPath();

@@ -1,49 +1,5 @@
 "use strict";
 
-/* Joseph M. Szewczak, 2010
-The benefits of full-spectrum data for analyzing bat echolocation calls.
-https://sonobat.com/wp-content/uploads/2014/02/presentation.pdf
-
-Oisin Mac Aodha, et. al., 2018    
-Bat detective-Deep learning tools for bat acoustic signal detection
-https://pmc.ncbi.nlm.nih.gov/articles/PMC5843167/
-
-Robert M. R. Barclay, et. al., 1999
-Variation in the echolocation calls of the hoary bat (Lasiurus cinereus): Influence of body size, habitat structure, and geographic location
-https://www.researchgate.net/publication/249542306_Variation_in_the_echolocation_calls_of_the_hoary_bat_Lasiurus_cinereus_Influence_of_body_size_habitat_structure_and_geographic_location
-
-We used the frequency with the highest intensity as a reference and determined higher and lower frequencies of calls at specific intensities
-below the peak (Fullard et al. 1993). This eliminates the subjectivity involved in attempts to determine the minimum and maximum
-frequencies in a call, which are often difficult to measure owing to background noise.
-For each call, we measured duration in milliseconds, peak frequency in kilohertz (spectral peak of highest inten-sity),
-Low18 (lowest frequency, 18 dB below peak), Low6 (lowest frequency, 6 dB below peak),
-High18 (highest frequency, 18 dBabove peak), and High6 (highest frequency, 6 dB above peak).
-
-Bat Echolocation Research. A handbook for planning and conducting acoustic studies
-https://www.batcon.org/wp-content/uploads/2020/09/Bat_Echolocation_Research_2nd_Ed_20200918.pdf
-Second Edition
-
-Table 4-1. Commonly measured parameters of individual bat echolocation calls and their abbreviations.
-
-Fc - Characteristic frequency, i.e. the frequency at the right hand end of the portion of the call
-with the lowest absolute slope (the Body).
-Sc - Characteristic Slope, or the slope of the body of the call.
-Fmax = Highest frequency recorded in the call.
-Fmin = Lowest frequency recorded in the call.
-Fmean = Mean frequency of the call, found by dividing area under the call by the duration.
-FME = Frequency of most energy, also called peak frequency, i.e. the frequency of the call with the
-greatest amplitude.
-S1 = initial slope of the call.
-Tc = Time between the start of the call and the point at which Fc is measured (i.e. the right hand
-end of the body)
-Fk = Frequency of the knee; the body of a call is said to start at the knee, which usually is a point
-where dramatic change of slope occurs.
-Tk = Time from start if a cakk to the knee
-Dur = Time from beggining of a call to its end.
-TBC/IPI = Time between calls (also called interpulse interval)
-
-*/
-
 function getSignalWindowMapping(sampleRate, numFrames, numBins, signalWindow)
 {
     const binsPerKHz = numBins/sampleRate*1000;
@@ -131,10 +87,12 @@ function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer
         count++;
     }
 
-    let foundCalls = searchForPeaks2(searchPeakTime, spectrogramData, searchFirstBin, searchLastBin);
+    //let foundCalls = searchForPeaks2(searchPeakTime, spectrogramData, searchFirstBin, searchLastBin);
+    const sortedFreq = peakFreq.toSorted((a, b) => a - b);
+    const magNoiseThreshold = sortedFreq[ Math.round(0.1 * (sortedFreq.length - 1)) ] * 10;
 
-    searchFreqPeak.box = getBox(searchFreqPeak, spectrogramData, searchFirstBin, searchLastBin); 
-    
+    searchFreqPeak.box = getBox(searchFreqPeak, spectrogramData, searchFirstBin, searchLastBin, magNoiseThreshold); 
+
     let minInFreq;
     let maxInFreq;
 
@@ -149,7 +107,7 @@ function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer
         timeData:{data: peakTime, minValue: minInTime, maxValue: maxInTime},
         freqData:{data: peakFreq, minValue: minInFreq, maxValue: maxInFreq},
         peak: searchFreqPeak,
-        foundPeaks: foundCalls
+        //foundPeaks: foundCalls
     };
 }
 

@@ -1,3 +1,5 @@
+"use strict";
+
 function drawFoundPeaks(firstFrame, lastFrame, firstBin, lastBin, specCanvasWindow, foundPeaks, ctx) {
     let numFrames = lastFrame - firstFrame;
     let numBins   = lastBin - firstBin;
@@ -7,7 +9,8 @@ function drawFoundPeaks(firstFrame, lastFrame, firstBin, lastBin, specCanvasWind
 
     const bar_color = magnitudeToRGBDark(0.9, 0, 1);
     const box_color = magnitudeToRGBDark(0.9, 0, 1, 0.3);
-    const pth_color = 'rgb( 255 0 255 )';
+    //const pth_color = 'rgb( 255 0 255 )';
+    const pth_color = 'rgb( 255 255 255 )';
     const pth_color_2 = 'rgb( 0 128 255 )';
 
     for(let i=0; i<foundPeaks.length; i++) {
@@ -26,23 +29,32 @@ function drawFoundPeaks(firstFrame, lastFrame, firstBin, lastBin, specCanvasWind
         ctx.fillStyle = bar_color;
         ctx.fillRect(specCanvasWindow.x + x, specCanvasWindow.y - specCanvasWindow.height + 5, delta, 3);
 
-        // Draw peak path
-        ctx.fillStyle = pth_color;
-        if (foundPeaks[i].box.rightPath) {
-            for(let j=0; j<foundPeaks[i].box.rightPath.length; j++) {
-                let x = Math.floor(foundPeaks[i].box.rightPath[j].frame / framesPerPixel);
-                let y = Math.floor((foundPeaks[i].box.rightPath[j].bin - firstBin) / binsPerPixel);
-                ctx.fillRect(specCanvasWindow.x + x, specCanvasWindow.y - y, 2, 2);
+        
+        function drawRidgePath(path, framesPerPixel, binsPerPixel, specCanvasWindow, color, ctx)
+        {
+            if(!path) return;
+
+            if (path) {
+                ctx.beginPath();
+                let firstPoint = true;
+                for(let j=0; j<path.length; j++) {
+                    let x = Math.floor((path[j].frame+0.5) / framesPerPixel);
+                    let y = Math.floor((path[j].bin - firstBin + 0.5) / binsPerPixel);
+                    if (firstPoint) {
+                        ctx.moveTo(specCanvasWindow.x + x, specCanvasWindow.y - y);
+                        firstPoint = false;
+                    } else {
+                        ctx.lineTo(specCanvasWindow.x + x, specCanvasWindow.y - y);
+                    }
+                }
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
             }
         }
-        ctx.fillStyle = pth_color_2;
-        if (foundPeaks[i].box.leftPath) {
-            for(let j=0; j<foundPeaks[i].box.leftPath.length; j++) {
-                let x = Math.floor(foundPeaks[i].box.leftPath[j].frame / framesPerPixel);
-                let y = Math.floor((foundPeaks[i].box.leftPath[j].bin - firstBin) / binsPerPixel);
-                ctx.fillRect(specCanvasWindow.x + x, specCanvasWindow.y - y, 2, 2);
-            }
-        }
+
+        drawRidgePath(foundPeaks[i].box.leftPath, framesPerPixel, binsPerPixel, specCanvasWindow, pth_color_2, ctx);
+        drawRidgePath(foundPeaks[i].box.rightPath, framesPerPixel, binsPerPixel, specCanvasWindow, pth_color, ctx);
     }
 }
 

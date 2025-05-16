@@ -1,3 +1,5 @@
+"use strict";
+
 function kaiserWindow(N, beta) {
     /* https://en.wikipedia.org/wiki/Kaiser_window */
     function besselI0(x) {

@@ -1,3 +1,5 @@
+"use strict";
+
 
 function drawPlaybackLine(currentTime, signalWindow, specCanvasWindow, image, ctx) {
 

@@ -1,3 +1,5 @@
+"use strict";
+
 function searchForPeaks2(searchPeakTime, spectrogramData, lowBin, upperBin) {
     let sortedSearchPeakTime = searchPeakTime.toSorted((a, b) => a - b);
 

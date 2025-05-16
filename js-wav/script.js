@@ -25,13 +25,37 @@ document.addEventListener('DOMContentLoaded', () => {
     tooltip.style.zIndex = '1000';
     document.body.appendChild(tooltip);
 
-    // Add mouse move handler for tooltip
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+
+    mainCanvas.addEventListener('mousedown', (e) => {
+        if (!sharedSpecCanvasWindow || !sharedSignalWindow) return;
+
+        const rect = mainCanvas.getBoundingClientRect();
+        const cssToCanvasScale = mainCanvas.width / rect.width;
+        const x = (e.clientX - rect.left) * cssToCanvasScale;
+        const y = (e.clientY - rect.top) * cssToCanvasScale;
+
+        // Check if mouse is within the spectrogram area
+        if (x >= sharedSpecCanvasWindow.x &&
+            x <= sharedSpecCanvasWindow.x + sharedSpecCanvasWindow.width &&
+            y >= sharedSpecCanvasWindow.y - sharedSpecCanvasWindow.height &&
+            y <= sharedSpecCanvasWindow.y) {
+            
+            isDragging = true;
+            dragStartX = x;
+            dragStartY = y;
+        }
+    });
+
     mainCanvas.addEventListener('mousemove', (e) => {
         if (!sharedSpecCanvasWindow || !sharedSignalWindow) return;
 
         const rect = mainCanvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const cssToCanvasScale = mainCanvas.width / rect.width;
+        const x = (e.clientX - rect.left) * cssToCanvasScale;
+        const y = (e.clientY - rect.top) * cssToCanvasScale;
 
         // Check if mouse is within the spectrogram area
         if (x >= sharedSpecCanvasWindow.x &&
@@ -49,16 +73,83 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Update tooltip position and content
             tooltip.style.display = 'block';
-            tooltip.style.left = (e.clientX + 10) + 'px';
-            tooltip.style.top = (e.clientY + 10) + 'px';
+            tooltip.style.left = (e.clientX + window.scrollX + 10) + 'px';
+            tooltip.style.top = (e.clientY + window.scrollY + 10) + 'px';
             tooltip.textContent = `Time: ${time.toFixed(4)}s, Freq: ${freq.toFixed(1)}kHz`;
+
+            // Draw selection rectangle while dragging
+            if (isDragging) {
+                const ctx = mainCanvas.getContext('2d');
+                ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+                ctx.putImageData(sharedImage, 0, 0);
+                
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                
+                // Draw only vertical lines for time selection
+                const startX = Math.min(dragStartX, x);
+                const stopX = Math.max(dragStartX, x);
+                const topY = sharedSpecCanvasWindow.y - sharedSpecCanvasWindow.height;
+                const bottomY = sharedSpecCanvasWindow.y;
+                
+                // Left vertical line
+                ctx.beginPath();
+                ctx.moveTo(startX, topY);
+                ctx.lineTo(startX, bottomY);
+                ctx.stroke();
+                
+                // Right vertical line
+                ctx.beginPath();
+                ctx.moveTo(stopX, topY);
+                ctx.lineTo(stopX, bottomY);
+                ctx.stroke();
+                
+                ctx.setLineDash([]);
+            }
         } else {
             tooltip.style.display = 'none';
         }
     });
 
+    mainCanvas.addEventListener('mouseup', (e) => {
+        if (!isDragging || !sharedSpecCanvasWindow || !sharedSignalWindow) return;
+
+        const rect = mainCanvas.getBoundingClientRect();
+        const cssToCanvasScale = mainCanvas.width / rect.width;
+        const x = (e.clientX - rect.left) * cssToCanvasScale;
+        const y = (e.clientY - rect.top) * cssToCanvasScale;
+
+        // Calculate start and stop times
+        const startX = Math.min(dragStartX, x);
+        const stopX = Math.max(dragStartX, x);
+        
+        const startTime = sharedSignalWindow.start + 
+            ((startX - sharedSpecCanvasWindow.x) / sharedSpecCanvasWindow.width) * sharedSignalWindow.duration;
+        const stopTime = sharedSignalWindow.start + 
+            ((stopX - sharedSpecCanvasWindow.x) / sharedSpecCanvasWindow.width) * sharedSignalWindow.duration;
+
+        // Set the values in the input fields
+        paramStart.value = startTime.toFixed(4);
+        paramStop.value = stopTime.toFixed(4);
+        
+        // Reset canvas and update
+        isDragging = false;
+        ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+        ctx.putImageData(sharedImage, 0, 0);
+        
+        // Update the display
+        zeroFFT();
+        showFile();
+    });
+
     mainCanvas.addEventListener('mouseleave', () => {
         tooltip.style.display = 'none';
+        if (isDragging) {
+            isDragging = false;
+            ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+            ctx.putImageData(sharedImage, 0, 0);
+        }
     });
 
     const paramStart= document.getElementById('start');
@@ -192,26 +283,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if(info.dataFormat) summary += tableLine('Data format:', info.dataFormat);
             if(info.bitsPerSample) summary += tableLine('Bits per sample:', info.bitsPerSample);
             if(info.numChannels) summary += tableLine('Channels:', info.numChannels);
+            if(info.guan)
+            {
+                summary += '<tr><td colspan=2><center>GUANO</center></td></tr>';
+                info.guan.forEach((value,key) => {
+                    summary += tableLine(key, value);
+                })
+
+            }
+            if(info.ixml)
+            {
+                summary += '<tr><td colspan=2><center>iXML</center></td></tr>';
+                info.ixml.forEach((value,key) => {
+                    summary += tableLine(key, value);
+                })
+
+            }
             summary += '</table>';
 
             infoDiv.innerHTML = summary;
-
-            function addStats(name, div, peakData, signalWindow, numFrames, numBins)
-            {
-                let framesPerSec = signalWindow.duration / numFrames;
-                div.innerHTML =
-                    '<table>' +
-                    tableLine(name, ''  ) + 
-                    tableLine('Time:',  (signalWindow.start + peakData.box.left_10 * framesPerSec).toFixed(4) + '-' + (signalWindow.start + peakData.box.right_10 * framesPerSec).toFixed(4) + ' s' ) + 
-                    tableLine('Duration:',  ((peakData.box.right_10 - peakData.box.left_10) * framesPerSec).toFixed(4) + ' s  '  ) + 
-                    tableLine('Start to peak mag.:',  ( (peakData.frame - peakData.box.left_10) / (peakData.box.right_10 - peakData.box.left_10) ).toFixed(2)  ) + 
-                    tableLine('Left Freq:', (peakData.box.left_10_freq / numBins * signalWindow.sampleRate / 1000).toFixed(1) + ' KHz  ' ) + 
-                    tableLine('Peak Freq:', (peakData.bin / numBins * signalWindow.sampleRate / 1000).toFixed(1) + ' KHz  '  ) + 
-                    tableLine('Right Freq:', (peakData.box.right_10_freq / numBins * signalWindow.sampleRate / 1000).toFixed(1) + ' KHz  ' ) + 
-                    '</table>';
-            }
-            
-            addStats('Found peak', peakStatsDiv, peak, signalWindow, timeData.data.length, params.fftSize);
 
             sharedMainImage = image;
             sharedPeakImage = overlayImage;
@@ -227,6 +317,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 sharedImage = sharedMainImage;
             }
             ctx.putImageData(sharedImage, 0, 0);
+
+            function addStats(name, div, peakData, signalWindow, numFrames, numBins)
+            {
+                getBoxStats(peakData);
+
+                let framesPerSec = signalWindow.duration / numFrames;
+                div.innerHTML =
+                    '<table>' +
+                    tableLine(name, ''  ) +
+                    tableLine('Min mag. from peak:',  (peakData.box.magnitudeDrop).toFixed(1) + ' dB '  ) + 
+                    tableLine('Noise mag. from peak:',  (peakData.box.noiseThreshold).toFixed(1) + ' dB '  ) + 
+                    tableLine('Time:',  (signalWindow.start + peakData.box.left * framesPerSec).toFixed(4) + '-' + (signalWindow.start + peakData.box.right * framesPerSec).toFixed(4) + ' s' ) + 
+                    tableLine('Duration:',  ((peakData.box.right - peakData.box.left) * framesPerSec).toFixed(4) + ' s  '  ) + 
+                    tableLine('Start to peak mag.:',  ( (peakData.frame - peakData.box.left) / (peakData.box.right - peakData.box.left) ).toFixed(2)  ) + 
+                    tableLine('Left Freq:', (peakData.box.left_freq / numBins * signalWindow.sampleRate / 1000).toFixed(1) + ' KHz  ' ) + 
+                    tableLine('Peak Freq:', (peakData.bin / numBins * signalWindow.sampleRate / 1000).toFixed(1) + ' KHz  '  ) + 
+                    tableLine('Right Freq:', (peakData.box.right_freq / numBins * signalWindow.sampleRate / 1000).toFixed(1) + ' KHz  ' ) + 
+                    '</table>';
+            }
+            
+            addStats('Found peak', peakStatsDiv, sharedData.peak, sharedSignalWindow, sharedData.timeData.data.length, sharedData.specData.data[0].length);
 
             audioElement.currentTime = signalWindow.start;
         } 
@@ -381,7 +492,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 sharedImage = sharedMainImage;
             }
             ctx.putImageData(sharedImage, 0, 0);
-            console.log('here');
         });
     });
 

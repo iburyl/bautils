@@ -55,6 +55,24 @@
             background-color: #45a049;
             color: white;
         }
+
+        div#info {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        div#info table {
+            table-layout: auto;
+            width: 100%;
+        }
+
+        div#info table td {
+            max-width: 400px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         /* Tab styles */
         .tabs {
             display: flex;
@@ -154,7 +172,7 @@
             <div class="tabs">
                 <button class="tab-button active" data-tab="main">Main</button>
                 <button class="tab-button" data-tab="peak-stats">Peak Stats</button>
-                <button class="tab-button" data-tab="sequences">Sequences</button>
+                <!--<button class="tab-button" data-tab="sequences">Sequences</button>-->
             </div>
 
             <!-- Main Tab -->
@@ -205,14 +223,12 @@
                 </div>
             </div>
 
-            <!-- Sequences Tab -->
+            <!-- Sequencies Tab -->
             <div id="sequences" class="tab-content">
                 <div class="tab-layout">
                     <div class="tab-inputs">
-                        <!-- Empty for now -->
                     </div>
                     <div class="tab-text">
-                        <!-- Empty for now -->
                     </div>
                 </div>
             </div>
