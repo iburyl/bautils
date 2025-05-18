@@ -491,7 +491,8 @@ document.addEventListener('DOMContentLoaded', () => {
             {
                 sharedImage = sharedMainImage;
             }
-            ctx.putImageData(sharedImage, 0, 0);
+
+            if(sharedImage) ctx.putImageData(sharedImage, 0, 0);
         });
     });
 
