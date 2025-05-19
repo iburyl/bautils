@@ -14,17 +14,19 @@
 **Title:** Variation in the echolocation calls of the hoary bat (Lasiurus cinereus): Influence of body size, habitat structure, and geographic location  
 **Source:** [ResearchGate Publication](https://www.researchgate.net/publication/249542306_Variation_in_the_echolocation_calls_of_the_hoary_bat_Lasiurus_cinereus_Influence_of_body_size_habitat_structure_and_geographic_location)
 
-## Methodology Notes
+#### Notes. 
 
-We used the frequency with the highest intensity as a reference and determined higher and lower frequencies of calls at specific intensities below the peak (Fullard et al. 1993). This eliminates the subjectivity involved in attempts to determine the minimum and maximum frequencies in a call, which are often difficult to measure owing to background noise.
+Page 531:
+> We measured a number of echolocation call variables. We used the frequency with the highest intensity as a
+reference and determined higher and lower frequencies of calls at specific intensities below the peak (Fullard et al. 1993).
+This eliminates the subjectivity involved in attempts to determine the minimum and maximum frequencies in a call,
+which are often difficult to measure owing to background noise. For each call, we measured duration in milliseconds,
+peak frequency in kilohertz (spectral peak of highest intensity), Low18 (lowest frequency, 18 dB below peak),
+Low6 (lowest frequency, 6 dB below peak), High18 (highest frequency, 18 dB above peak), and High6 (highest frequency, 6 dB above peak).
 
-For each call, we measured:
-- Duration (milliseconds)
-- Peak frequency (kHz) - spectral peak of highest intensity
-- Low18 (lowest frequency, 18 dB below peak)
-- Low6 (lowest frequency, 6 dB below peak)
-- High18 (highest frequency, 18 dB above peak)
-- High6 (highest frequency, 6 dB above peak)
+1. "18 dB above peak" that is presumably to be read, as below peak because everything beyond peak itself is below peak
+
+2. I found 6 and 18 dB insufficient to consider measureing the whole calls. That probably depends on accuracy in intensity measurent for the peak itself.
 
 ## Bat Echolocation Research Handbook
 
