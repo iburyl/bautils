@@ -18,10 +18,7 @@ async function showFile()
     try {
         const arrayBuffer = await file.arrayBuffer();
 
-        //const audioURL = URL.createObjectURL(arrayBuffer);
-        //document.getElementById('audioPlayer').src = audioURL;
-
-        let {audioContext, info} = getAudioContext(arrayBuffer, infoDiv);
+        let {audioContext, info} = getAudioContext(arrayBuffer);
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
         window.sharedAudioBuffer = audioBuffer;

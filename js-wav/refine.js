@@ -21,17 +21,21 @@ document.addEventListener('DOMContentLoaded', () => {
     } );
 
     refineButton.addEventListener('click', async () => {
-        const file = fileInput.files[0];
+        const file = window.sharedFile;
         if (!file) {
             alert('Please select a WAV file first');
             return;
         }
 
         try {
-            // Read the file
             const arrayBuffer = await file.arrayBuffer();
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            let {audioContext, info} = getAudioContext(arrayBuffer);
             const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            
+            // Read the file
+            //const arrayBuffer = await file.arrayBuffer();
+            //const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            //const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
             // Get parameters
             const startTime = parseFloat(startInput.value) || 0;

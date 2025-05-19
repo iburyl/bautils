@@ -62,7 +62,7 @@ function findChunk(name, chunks) {
     return {off:-1, len:0};
 }
 
-function getAudioContext(arrayBuffer, infoDiv)
+function getAudioContext(arrayBuffer)
 {
     const dataView = new DataView(arrayBuffer);
 
