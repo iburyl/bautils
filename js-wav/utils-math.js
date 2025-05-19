@@ -1,5 +1,67 @@
 "use strict";
 
+// FIR filter implementation
+class FIRFilter {
+    constructor(filterType, cutoffFreq, sampleRate, filterLength = 101) {
+        this.filterType = filterType; // 'highpass' or 'lowpass'
+        this.cutoffFreq = cutoffFreq;
+        this.sampleRate = sampleRate;
+        this.filterLength = filterLength;
+        this.coefficients = this.designFilter();
+    }
+
+    designFilter() {
+        const normalizedFreq = this.cutoffFreq / (this.sampleRate / 2);
+        const coefficients = new Array(this.filterLength);
+        const halfLength = Math.floor(this.filterLength / 2);
+
+        // Design filter coefficients using window method
+        for (let i = 0; i < this.filterLength; i++) {
+            const n = i - halfLength;
+            if (n === 0) {
+                coefficients[i] = this.filterType === 'lowpass' ? normalizedFreq : 1 - normalizedFreq;
+            } else {
+                const sinc = Math.sin(Math.PI * normalizedFreq * n) / (Math.PI * n);
+                coefficients[i] = this.filterType === 'lowpass' ? sinc : -sinc;
+            }
+        }
+
+        // Apply Hamming window to reduce ripple
+        const window = this.hammingWindow(this.filterLength);
+        for (let i = 0; i < this.filterLength; i++) {
+            coefficients[i] *= window[i];
+        }
+
+        return coefficients;
+    }
+
+    hammingWindow(length) {
+        const window = new Array(length);
+        for (let i = 0; i < length; i++) {
+            window[i] = 0.54 - 0.46 * Math.cos(2 * Math.PI * i / (length - 1));
+        }
+        return window;
+    }
+
+    applyFilter(inputSignal) {
+        const outputSignal = new Float32Array(inputSignal.length);
+        const halfLength = Math.floor(this.filterLength / 2);
+
+        for (let i = 0; i < inputSignal.length; i++) {
+            let sum = 0;
+            for (let j = 0; j < this.filterLength; j++) {
+                const inputIndex = i - halfLength + j;
+                if (inputIndex >= 0 && inputIndex < inputSignal.length) {
+                    sum += inputSignal[inputIndex] * this.coefficients[j];
+                }
+            }
+            outputSignal[i] = sum;
+        }
+
+        return outputSignal;
+    }
+}
+
 function kaiserWindow(N, beta) {
     /* https://en.wikipedia.org/wiki/Kaiser_window */
     function besselI0(x) {

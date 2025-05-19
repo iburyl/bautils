@@ -34,6 +34,7 @@
             display: flex;
             gap: 20px;
             align-items: center;
+            padding-bottom: 10px;
         }
         canvas {
             border: 1px solid #ccc;
@@ -127,6 +128,17 @@
             padding: 2px;
             font: inherit;
         }
+        .tooltip {
+            position: absolute;
+            display: none;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius : 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -154,7 +166,6 @@
             <button id="move_left_fast">&#x25C0;&#x25C0;</button>
             <button id="move_left">&#x25C0;</button>
             <button id="zoom_in">Zoom in</button>
-            <button id="zoom_peak">Zoom in peak</button>
             <button id="zoom_out">Zoom out</button>
             <button id="move_right">&#x25B6;</button>
             <button id="move_right_fast">&#x25B6;&#x25B6;</button>
@@ -217,6 +228,9 @@
                             <div>Search Min Freq (KHz)<br /><input type="text" id="peak_min_freq"></div>
                             <div>Search Max Freq (KHz)<br /><input type="text" id="peak_max_freq"></div>
                         </div>
+                        <div class="input_list">
+                            <button id="zoom_peak">Zoom in peak</button>
+                        </div>
                     </div>
                     <div class="tab-text">
                         <div id="peak_stats"></div>
@@ -238,15 +252,15 @@
                 <div class="tab-layout">
                     <div class="tab-inputs">
                         <div class="input_list">
-                            <audio id="audioPlayerRefined" controls></audio>
-                        </div>
-                        <div class="input_list">
                             <div>Volume change (dB)<br /><input type="text" id="volume"></div>
                             <div>High pass filter (KHz)<br /><input type="text" id="high-pass"></div>
                             <div>Low pass filter (KHz)<br /><input type="text" id="low-pass"></div>
                         </div>
                         <div class="input_list">
                             <button id="do-refine">refine</button>
+                            <button id="load-refined">load</button>
+                        </div>
+                        <div class="input_list empty_on_load" id="refined-container">
                         </div>
                     </div>
                     <div class="tab-text">
@@ -259,6 +273,7 @@
     <script src="js-wav/utils-draw.js"></script>
     <script src="js-wav/utils-math.js"></script>
     <script src="js-wav/utils-wav.js"></script>
+    <script src="js-wav/utils-table.js"></script>
     <script src="js-wav/analysis-main.js"></script>
     <script src="js-wav/analysis-peak-info.js"></script>
     <script src="js-wav/analysis-sequencies.js"></script>
@@ -266,9 +281,11 @@
     <script src="js-wav/draw-graph.js"></script>
     <script src="js-wav/draw-overlay-peaks.js"></script>
     <script src="js-wav/draw-playback.js"></script>
-    <script src="js-wav/script.js"></script>
+    <script src="js-wav/main.js"></script>
     <script src="js-wav/refine.js"></script>
-    <script>
-    </script>
+    <script src="js-wav/ui-buttons.js"></script>
+    <script src="js-wav/ui-inputs.js"></script>
+    <script src="js-wav/ui-spectrogram.js"></script>
+    <script src="js-wav/ui-tabs.js"></script>
 </body>
 </html> 

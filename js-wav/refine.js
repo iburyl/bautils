@@ -2,11 +2,23 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const refineButton = document.getElementById('do-refine');
+    const refineLoadButton = document.getElementById('load-refined');
     const fileInput = document.getElementById('wavFile');
     const startInput = document.getElementById('start');
     const stopInput = document.getElementById('stop');
     const volumeInput = document.getElementById('volume');
-    const refinedAudio = document.getElementById('audioPlayerRefined');
+    const highPassInput = document.getElementById('high-pass');
+    const lowPassInput = document.getElementById('low-pass');
+
+    //let sharedRefined;
+
+    refineLoadButton.addEventListener('click', async () => {
+        window.sharedFile = window.sharedRefined;
+        fileInput.value = "";
+
+        cleanInput();
+        showFile();
+    } );
 
     refineButton.addEventListener('click', async () => {
         const file = fileInput.files[0];
@@ -26,6 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const stopTime = parseFloat(stopInput.value) || audioBuffer.duration;
             const volumeDb = parseFloat(volumeInput.value) || 0;
             const volume = Math.pow(10, volumeDb / 20); // Convert dB to amplitude ratio
+            const highPassFreq = parseFloat(highPassInput.value) * 1000 || 0; // Convert KHz to Hz
+            const lowPassFreq = parseFloat(lowPassInput.value) * 1000 || 0; // Convert KHz to Hz
 
             // Create new buffer with the selected time window
             const newDuration = stopTime - startTime;
@@ -35,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 audioBuffer.sampleRate
             );
 
-            // Copy and adjust the selected portion
+            // Copy and process the selected portion
             for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
                 const channelData = audioBuffer.getChannelData(channel);
                 const newChannelData = newBuffer.getChannelData(channel);
@@ -43,12 +57,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const startSample = Math.floor(startTime * audioBuffer.sampleRate);
                 const stopSample = Math.floor(stopTime * audioBuffer.sampleRate);
                 
-                // Copy the selected portion and apply volume
-                for (let i = 0; i < newChannelData.length; i++) {
-                    const sourceIndex = startSample + i;
-                    if (sourceIndex < stopSample) {
-                        newChannelData[i] = channelData[sourceIndex] * volume;
-                    }
+                // Extract the selected portion
+                const selectedData = new Float32Array(stopSample - startSample);
+                for (let i = 0; i < selectedData.length; i++) {
+                    selectedData[i] = channelData[startSample + i];
+                }
+
+                // Apply filters if specified
+                let filteredData = selectedData;
+                if (highPassFreq > 0) {
+                    const highPassFilter = new FIRFilter('highpass', highPassFreq, audioBuffer.sampleRate);
+                    filteredData = highPassFilter.applyFilter(filteredData);
+                }
+                if (lowPassFreq > 0 && lowPassFreq < audioBuffer.sampleRate / 2) {
+                    const lowPassFilter = new FIRFilter('lowpass', lowPassFreq, audioBuffer.sampleRate);
+                    filteredData = lowPassFilter.applyFilter(filteredData);
+                }
+
+                // Apply volume and copy to new buffer
+                for (let i = 0; i < filteredData.length; i++) {
+                    newChannelData[i] = filteredData[i] * volume;
                 }
             }
 
@@ -56,9 +84,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const wavBlob = audioBufferToWav(newBuffer);
             const wavUrl = URL.createObjectURL(wavBlob);
 
+            // refined-container;
+            
             // Update the audio player
+            const refinedContainer = document.getElementById('refined-container');
+            refinedContainer.innerHTML = '';
+
+            const refinedAudio = document.createElement("audio");
+            refinedAudio.controls = true;
             refinedAudio.src = wavUrl;
             refinedAudio.load();
+
+            refinedContainer.appendChild(refinedAudio);
+
+            window.sharedRefined = wavBlob;
 
         } catch (error) {
             console.error('Error processing audio:', error);
@@ -66,74 +105,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
-// Helper function to convert AudioBuffer to WAV
-function audioBufferToWav(buffer) {
-    const numChannels = buffer.numberOfChannels;
-    const sampleRate = buffer.sampleRate;
-    const format = 1; // PCM
-    const bitDepth = 16;
-
-    const bytesPerSample = bitDepth / 8;
-    const blockAlign = numChannels * bytesPerSample;
-    const byteRate = sampleRate * blockAlign;
-    const dataSize = buffer.length * blockAlign;
-    const headerSize = 44;
-    const totalSize = headerSize + dataSize;
-
-    const arrayBuffer = new ArrayBuffer(totalSize);
-    const view = new DataView(arrayBuffer);
-
-    // RIFF identifier
-    writeString(view, 0, 'RIFF');
-    // RIFF chunk length
-    view.setUint32(4, totalSize - 8, true);
-    // RIFF type
-    writeString(view, 8, 'WAVE');
-    // format chunk identifier
-    writeString(view, 12, 'fmt ');
-    // format chunk length
-    view.setUint32(16, 16, true);
-    // sample format (raw)
-    view.setUint16(20, format, true);
-    // channel count
-    view.setUint16(22, numChannels, true);
-    // sample rate
-    view.setUint32(24, sampleRate, true);
-    // byte rate (sample rate * block align)
-    view.setUint32(28, byteRate, true);
-    // block align (channel count * bytes per sample)
-    view.setUint16(32, blockAlign, true);
-    // bits per sample
-    view.setUint16(34, bitDepth, true);
-    // data chunk identifier
-    writeString(view, 36, 'data');
-    // data chunk length
-    view.setUint32(40, dataSize, true);
-
-    // Write the PCM samples
-    const offset = 44;
-    const channelData = [];
-    for (let i = 0; i < numChannels; i++) {
-        channelData.push(buffer.getChannelData(i));
-    }
-
-    let pos = 0;
-    for (let i = 0; i < buffer.length; i++) {
-        for (let channel = 0; channel < numChannels; channel++) {
-            const sample = Math.max(-1, Math.min(1, channelData[channel][i]));
-            const value = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
-            view.setInt16(offset + pos, value, true);
-            pos += 2;
-        }
-    }
-
-    return new Blob([arrayBuffer], { type: 'audio/wav' });
-}
-
-// Helper function to write strings to DataView
-function writeString(view, offset, string) {
-    for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
-    }
-} 

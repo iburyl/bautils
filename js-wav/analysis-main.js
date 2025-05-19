@@ -110,4 +110,3 @@ function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer
         //foundPeaks: foundCalls
     };
 }
-
