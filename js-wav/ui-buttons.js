@@ -3,28 +3,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const paramStart= document.getElementById('start');
     const paramStop= document.getElementById('stop');
-    const paramMinFreq= document.getElementById('min_freq');
-    const paramMaxFreq= document.getElementById('max_freq');
-    const paramFFT = document.getElementById('fft');
-    const paramHop = document.getElementById('hop');
-    const paramMinE= document.getElementById('min_e');
-    const paramKaiserBeta = document.getElementById('kaiser_beta');
-    const paramPeakMinFreq= document.getElementById('peak_min_freq');
-    const paramPeakMaxFreq= document.getElementById('peak_max_freq');
 
     document.getElementById('updateButton').addEventListener('click', async () => {
         showFile();
     });
 
     document.getElementById('resetButton').addEventListener('click', async () => {
-        zeroFFT();
-        paramMinE.value = "";
-        paramKaiserBeta.value = "";
-        paramStart.value = "";
-        paramStop.value = "";
-        paramMinFreq.value = "";
-        paramMaxFreq.value = "";
-
+        fireNewAudioEvent();
         showFile();
     });
 
@@ -43,7 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         paramStart.value = (window.sharedSignalWindow.start + leftBound * framesPerSec).toFixed(4);
         paramStop.value = (window.sharedSignalWindow.start + rightBound * framesPerSec).toFixed(4);
-        zeroFFT();
+
+        fireSignalWindowUpdateEvent();
         showFile();
     });
 
@@ -52,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const left = Math.max(0, window.sharedSignalWindow.start + window.sharedSignalWindow.duration*coeff);
         paramStart.value = left.toFixed(4);
         paramStop.value = Math.min(window.sharedSignalWindow.fullDuration, left + window.sharedSignalWindow.duration).toFixed(4);
-        zeroFFT();
+        fireSignalWindowUpdateEvent();
         showFile();
     }
     
@@ -75,14 +61,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('zoom_in').addEventListener('click', function () {
         paramStart.value = Math.max(0, (window.sharedSignalWindow.start + window.sharedSignalWindow.duration/3).toFixed(4));
         paramStop.value = Math.min(window.sharedSignalWindow.fullDuration, (window.sharedSignalWindow.stop - window.sharedSignalWindow.duration/3).toFixed(4));
-        zeroFFT();
+
+        fireSignalWindowUpdateEvent();
         showFile();
     });
 
     document.getElementById('zoom_out').addEventListener('click', function () {
         paramStart.value = Math.max(0, (window.sharedSignalWindow.start - window.sharedSignalWindow.duration).toFixed(4));
         paramStop.value = Math.min(window.sharedSignalWindow.fullDuration, (window.sharedSignalWindow.stop + window.sharedSignalWindow.duration).toFixed(4));
-        zeroFFT();
+
+        fireSignalWindowUpdateEvent();
         showFile();
     });
 
@@ -92,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mainCanvas.width = Math.floor(500*ratio);
         mainCanvas.height = 500;
 
-        zeroFFT();
+        fireSignalWindowUpdateEvent();
         showFile();
 
         mainCanvas.style.width = mainCanvas.width + 'px';

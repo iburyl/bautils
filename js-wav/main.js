@@ -1,6 +1,32 @@
 "use strict";
 
-async function showFile()
+async function loadFile()
+{
+    const file = window.sharedFile;
+    if (!file) {
+        alert('Please select a WAV file first');
+        return;
+    }
+
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+
+        let {audioContext, info} = getAudioContext(arrayBuffer);
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+        window.sharedAudioBuffer = audioBuffer;
+        window.sharedAudioInfo   = info;
+
+        fireNewAudioEvent();
+    } 
+    catch (error) {
+        console.error('Error processing audio:');
+        console.error(error);
+        alert('Error processing audio file');
+    }
+}
+
+function showFile()
 {
     const infoDiv = document.getElementById('info');
     const peakTab = document.getElementById('peak-stats');
@@ -16,12 +42,17 @@ async function showFile()
     }
 
     try {
+        /*
         const arrayBuffer = await file.arrayBuffer();
 
         let {audioContext, info} = getAudioContext(arrayBuffer);
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
         window.sharedAudioBuffer = audioBuffer;
+        */
+
+        const audioBuffer = window.sharedAudioBuffer;
+        const info = window.sharedAudioInfo;
 
         const sampleRate = audioBuffer.sampleRate;
         const duration   = audioBuffer.duration;
@@ -29,7 +60,7 @@ async function showFile()
         const {signalWindow, params} = getUserParams(sampleRate, duration);
 
         // Generate spectrogram
-        window.sharedData = generateSpectrogram(params.fftSize, params.hopSize, signalWindow, params, audioBuffer, audioContext);
+        window.sharedData = generateSpectrogram(params.fftSize, params.hopSize, signalWindow, params, audioBuffer);
         const {specData, timeData, freqData, peak, foundPeaks} = window.sharedData;
 
         // Draw spectrogram with axes
@@ -83,18 +114,21 @@ async function showFile()
         {
             getBoxStats(peakData);
 
+            const binToKHz = 1 / numBins * signalWindow.sampleRate / 1000;
+            
             let framesPerSec = signalWindow.duration / numFrames;
             div.innerHTML =
                 '<table>' +
                 tableLine(name, ''  ) +
                 tableLine('Min mag. from peak:',  (peakData.box.magnitudeDrop).toFixed(1) + ' dB '  ) + 
                 tableLine('Noise mag. from peak:',  (peakData.box.noiseThreshold).toFixed(1) + ' dB '  ) + 
-                tableLine('Time:',  (signalWindow.start + peakData.box.left * framesPerSec).toFixed(4) + '-' + (signalWindow.start + peakData.box.right * framesPerSec).toFixed(4) + ' s' ) + 
-                tableLine('Duration:',  ((peakData.box.right - peakData.box.left) * framesPerSec).toFixed(4) + ' s  '  ) + 
+                tableLine('Time (start):',  (signalWindow.start + peakData.box.left * framesPerSec).toFixed(4) + ' s' ) + 
+                tableLine('Dur (duration):',  ((peakData.box.right - peakData.box.left) * framesPerSec).toFixed(4) + ' s  '  ) + 
                 tableLine('Start to peak mag.:',  ( (peakData.frame - peakData.box.left) / (peakData.box.right - peakData.box.left) ).toFixed(2)  ) + 
-                tableLine('Left Freq:', (peakData.box.left_freq / numBins * signalWindow.sampleRate / 1000).toFixed(1) + ' KHz  ' ) + 
-                tableLine('Peak Freq:', (peakData.bin / numBins * signalWindow.sampleRate / 1000).toFixed(1) + ' KHz  '  ) + 
-                tableLine('Right Freq:', (peakData.box.right_freq / numBins * signalWindow.sampleRate / 1000).toFixed(1) + ' KHz  ' ) + 
+                tableLine('Fmax (highest frequency):', (peakData.box.maxFreq * binToKHz).toFixed(1) + ' KHz  ' ) + 
+                tableLine('FME (frequency of most energy):', (peakData.bin * binToKHz).toFixed(1) + ' KHz  '  ) + 
+                tableLine('Fmean (mean frequency):', (peakData.box.meanFreq * binToKHz).toFixed(1) + ' KHz  '  ) + 
+                tableLine('Fmin (lowest frequency):', (peakData.box.minFreq * binToKHz).toFixed(1) + ' KHz  ' ) + 
                 '</table>';
         }
         

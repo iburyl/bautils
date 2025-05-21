@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.putImageData(window.sharedImage, 0, 0);
         
         // Update the display
-        zeroFFT();
+        fireSignalWindowUpdateEvent();
         showFile();
     });
 

@@ -9,7 +9,7 @@ function getSignalWindowMapping(sampleRate, numFrames, numBins, signalWindow)
     return {startFrame: 0, stopFrame: numFrames, firstBin:firstBin, lastBin:lastBin};
 }
 
-function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer, audioContext) {
+function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer) {
     const channelData = audioBuffer.getChannelData(0);
     const sampleRate = signalWindow.sampleRate;
     const kaiserBeta = params.kaiserBeta;

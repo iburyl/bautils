@@ -10,13 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const highPassInput = document.getElementById('high-pass');
     const lowPassInput = document.getElementById('low-pass');
 
-    //let sharedRefined;
-
     refineLoadButton.addEventListener('click', async () => {
         window.sharedFile = window.sharedRefined;
         fileInput.value = "";
-
-        cleanInput();
+        await loadFile();
         showFile();
     } );
 
