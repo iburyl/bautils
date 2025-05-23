@@ -1,11 +1,6 @@
 # BansheeLab.app
 
-A web-based bioacoustics analysis tool for studying bat echolocation calls.
-
-## Overview
-
-[BansheeLab.app](https:://BansheeLab.app) is a web application designed for analyzing and inspection of bird and bat calls.
-
+[BansheeLab.app](https:://BansheeLab.app) is a web-based bioacoustics analysis tool for studying bird and bat calls.
 
 ## Features
 
