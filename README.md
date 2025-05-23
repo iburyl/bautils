@@ -1,6 +1,6 @@
 # BansheeLab.app
 
-[BansheeLab.app](https:://BansheeLab.app) is a web-based bioacoustics analysis tool for studying bird and bat calls.
+[BansheeLab.app](https://BansheeLab.app) is a web-based bioacoustics analysis tool for studying bird and bat calls.
 
 ## Features
 
