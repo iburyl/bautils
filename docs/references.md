@@ -7,6 +7,7 @@
 **Source:** [Bat Conservation International](https://www.batcon.org/wp-content/uploads/2020/09/Bat_Echolocation_Research_2nd_Ed_20200918.pdf)
 
 ### Common Call Parameters
+Page 50. Table 4-1.
 
 | Parameter | Description |
 |-----------|-------------|
@@ -22,6 +23,10 @@
 | Tk | Time from start of a call to the knee |
 | Dur | Time from beginning of a call to its end |
 | TBC/IPI | Time between calls (also called interpulse interval) |
+
+## 
+
+**Source:** [Echolocation Call Characteristics of Western North American Bats](https://sonobat.com/download/Western_NA_Bat_Acoustic_Table.pdf)
 
 ## Academic Papers
 

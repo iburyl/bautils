@@ -11,19 +11,53 @@
         }
         body {
             font-family: Arial, sans-serif;
-            max-width: 1600px;
+            max-width: 1640px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #444;
         }
         h1 {
-            font-size: 1.0em;
-            margin-block-start: -0.5em;
-            margin-block-end: 1em;
+            font-size: 1.4em;
+            margin-block-start: 0.2em;
+            margin-block-end: 0.8em;
+            font-weight: 500;
+            color: #444;
+            text-align: center;
+            letter-spacing: -0.3px;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            text-shadow: 0.5px 0.5px 0.5px rgba(0,0,0,0.05);
+            display: inline-block;
+            margin: 0;
+            vertical-align: middle;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 15px;
+            background-color: #e8e8e8;
+            padding: 10px 20px;
+            box-shadow: -20px 0 20px -10px rgba(0, 0, 0, 0.3),
+                         20px 0 20px -10px rgba(0, 0, 0, 0.3);
+        }
+        .header img {
+            vertical-align: middle;
         }
         .container {
             display: flex;
             flex-direction: column;
             gap: 20px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+            height: auto;
+            overflow-y: auto;
+            box-shadow: -20px 0 20px -10px rgba(0, 0, 0, 0.3),
+                         20px 0 20px -10px rgba(0, 0, 0, 0.3);
+/*
+            box-shadow: -20px 0 20px -10px rgba(200, 200, 200, 0.2),
+                         20px 0 20px -10px rgba(200, 200, 200, 0.2);
+*/
         }
         .tabs-container {
             display: flex;
@@ -142,7 +176,10 @@
     </style>
 </head>
 <body>
-    <h1>bansheelab.app - bioacoustics utilities</h1>
+    <div class="header">
+        <img src="img/favicon.png" height=60 />
+        <h1>BansheeLab.app</h1>
+    </div>
     <div class="container">
         <div class="input_list">
             <input type="file" id="wavFile" accept=".wav" />
