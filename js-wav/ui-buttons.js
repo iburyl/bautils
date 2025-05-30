@@ -47,11 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('move_left').addEventListener('click', function () {
-        moveCoeff(-1/3);
+        moveCoeff(-1/5);
     });
 
     document.getElementById('move_right').addEventListener('click', function () {
-        moveCoeff(+1/3);
+        moveCoeff(+1/5);
     });
 
     document.getElementById('move_right_fast').addEventListener('click', function () {

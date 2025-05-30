@@ -2,10 +2,8 @@
 
 function getBoxStats(peak)
 {
-    const minMagnitudeDrop = 20 * Math.min(Math.log10(peak.value / peak.box.leftPath.at(-1).value), Math.log10(peak.value / peak.box.rightPath.at(-1).value));
-    const noiseThreshold = 20 * Math.log10(peak.value / peak.box.magNoiseThreshold);
-
-    //console.log(peak.box.magNoiseThreshold);
+    const minMagnitudeDrop = -20 * Math.min(Math.log10(peak.value / peak.box.leftPath.at(-1).value), Math.log10(peak.value / peak.box.rightPath.at(-1).value));
+    const noiseThreshold = -20 * Math.log10(peak.value / peak.box.magNoiseThreshold);
 
     function getSum(path)
     {
@@ -35,9 +33,6 @@ function getBoxStats(peak)
     const [lSum, lFrames] = getSum(peak.box.leftPath);
     const [rSum, rFrames] = getSum(peak.box.rightPath);
     const Fmean = (lSum+rSum)/(lFrames+rFrames);
-    //console.log(lSum, lFrames);
-    //console.log(rSum, rFrames);
-    //console.log(Fmean);
 
     peak.box.magnitudeDrop = minMagnitudeDrop;
     peak.box.noiseThreshold = noiseThreshold;
@@ -148,7 +143,7 @@ function detectRidgeSubPixel(lastFrame, lastBin, binWindow, frameDirection, last
     return {frame:maxFrame, bin:maxBin, value:maxValue, lastYMove:lastMove};
 }
 
-function getBox(peakStat, spectrogramData, lowBin, upperBin, magNoiseThreshold) {
+function getBox(peakStat, spectrogramData, lowBin, upperBin, magNoiseThreshold=0) {
     //const detectRidge = detectRidgeSlow;
     //const detectRidge = detectRidgeQuick;
     const detectRidge = detectRidgeSubPixel;
@@ -156,22 +151,25 @@ function getBox(peakStat, spectrogramData, lowBin, upperBin, magNoiseThreshold) 
     let startFrame = peakStat.frame;
     let startBin = peakStat.bin;
     let value = peakStat.value;
-    magNoiseThreshold = (magNoiseThreshold)?magNoiseThreshold:0;
 
     const numFrames = spectrogramData.length;
     const numBins   = spectrogramData[0].length;
 
     let binWindow=3;
 
-    const magDropInDB = 30;
-    const magDropCoeff = Math.pow(10,-magDropInDB/20);
+    const leftMagDropInDB = (params.peak.leftMagFall.value != 0) ? params.peak.leftMagFall.read() : -30;
+    const leftMagDropCoeff = Math.pow(10,leftMagDropInDB/20);
+    const leftNoiseThreshold = (params.peak.leftMagFall.value != 0) ? 0 : magNoiseThreshold;
+    const rightMagDropInDB = (params.peak.rightMagFall.value != 0) ? params.peak.rightMagFall.read() : -30;
+    const rightMagDropCoeff = Math.pow(10,rightMagDropInDB/20);
+    const rightNoiseThreshold = (params.peak.rightMagFall.value != 0) ? 0 : magNoiseThreshold;
 
     let rightPath = [];
     let leftPath = [];
     let maxF = startBin;
     let minF = startBin;
     
-    function makePath(firstPoint, direction, spectrogramData, path) {
+    function makePath(firstPoint, direction, spectrogramData, magDropCoeff, magNoiseThreshold, path) {
         let nextPoint = firstPoint;
         for(let maxPoints=numFrames; maxPoints>0; maxPoints--)
         {
@@ -186,8 +184,8 @@ function getBox(peakStat, spectrogramData, lowBin, upperBin, magNoiseThreshold) 
 
     let firstPoint = {frame:startFrame, bin:startBin, value:value, lastYMove:0};
 
-    makePath(firstPoint, +1, spectrogramData, rightPath);
-    makePath(firstPoint, -1, spectrogramData, leftPath);
+    makePath(firstPoint, +1, spectrogramData, rightMagDropCoeff, rightNoiseThreshold, rightPath);
+    makePath(firstPoint, -1, spectrogramData, leftMagDropCoeff, leftNoiseThreshold, leftPath);
     
     const right = (rightPath.length>0)?rightPath[rightPath.length-1].frame:startFrame;
     const left  = (leftPath.length>0)?leftPath[leftPath.length-1].frame:startFrame;
