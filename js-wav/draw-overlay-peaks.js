@@ -1,6 +1,6 @@
 "use strict";
 
-function drawFoundPeaks(firstFrame, lastFrame, firstBin, lastBin, specCanvasWindow, foundPeaks, ctx) {
+function drawFoundPeaks(firstFrame, lastFrame, firstBin, lastBin, specCanvasWindow, foundPeaks, ctx, specData) {
     let numFrames = lastFrame - firstFrame;
     let numBins   = lastBin - firstBin;
 
@@ -8,18 +8,21 @@ function drawFoundPeaks(firstFrame, lastFrame, firstBin, lastBin, specCanvasWind
     const binsPerPixel = numBins / specCanvasWindow.height;
 
     const bar_color = magnitudeToRGBDark(0.9, 0, 1);
-    const box_color = magnitudeToRGBDark(0.9, 0, 1, 0.3);
+    const box_color = magnitudeToRGBDark(0.9, 0, 1, 0.2);
+    //const box_color = magnitudeToRGBDark(1, 0, 1, 0.2);
+
     //const pth_color = 'rgb( 255 0 255 )';
-    const pth_color = 'rgb( 255 255 255 )';
+    //const pth_color = 'rgb( 255 255 255 )';
+    const pth_color = 'rgb( 128 0 255 )';
     const pth_color_2 = 'rgb( 0 128 255 )';
 
     for(let i=0; i<foundPeaks.length; i++) {
-        let x = Math.floor(foundPeaks[i].box.leftFrame / framesPerPixel);
-        let delta = Math.max(Math.round((foundPeaks[i].box.rightFrame - foundPeaks[i].box.leftFrame) / framesPerPixel), 1);
+        const x = Math.floor((foundPeaks[i].box.leftFrame+0.5) / framesPerPixel);
+        const delta = Math.max(Math.round((foundPeaks[i].box.rightFrame + 0.5 - foundPeaks[i].box.leftFrame) / framesPerPixel), 1);
 
-        let y1 = Math.floor((foundPeaks[i].box.maxBin - firstBin) / binsPerPixel);
-        let y2 = Math.floor((foundPeaks[i].box.minBin - firstBin) / binsPerPixel);
-
+        const y1 = Math.floor((foundPeaks[i].box.maxBin - firstBin + 0.5) / binsPerPixel);
+        const y2 = Math.floor((foundPeaks[i].box.minBin - firstBin + 0.5) / binsPerPixel);
+        const bin_delta =  y1-y2;
 
         // Draw peak box
         ctx.fillStyle = box_color;
@@ -58,13 +61,13 @@ function drawFoundPeaks(firstFrame, lastFrame, firstBin, lastBin, specCanvasWind
     }
 }
 
-function drawPeaksOverlay(peaks, signalWindowMapping, specCanvasWindow, mainImage, ctx) {
+function drawPeaksOverlay(peaks, signalWindowMapping, specCanvasWindow, mainImage, ctx, specData) {
     ctx.putImageData(mainImage, 0, 0);
 
     const width = ctx.canvas.width;
     const height = ctx.canvas.height;
 
-    drawFoundPeaks(signalWindowMapping.startFrame, signalWindowMapping.stopFrame, signalWindowMapping.firstBin, signalWindowMapping.lastBin, specCanvasWindow, peaks, ctx);
+    drawFoundPeaks(signalWindowMapping.startFrame, signalWindowMapping.stopFrame, signalWindowMapping.firstBin, signalWindowMapping.lastBin, specCanvasWindow, peaks, ctx, specData);
 
     return {overlayImage: ctx.getImageData(0, 0, width, height)};
 }

@@ -66,7 +66,7 @@ function showFile()
         // Draw spectrogram with axes
         const {image, specCanvasWindow} = drawSpectrogram(specData, timeData, freqData, foundPeaks, signalWindow, params.minE, ctx);
         const {overlayImage} = drawPeaksOverlay([peak],
-            getSignalWindowMapping(sampleRate, specData.data.length, specData.data[0].length, signalWindow), specCanvasWindow, image, ctx);
+            getSignalWindowMapping(sampleRate, specData.data.length, specData.data[0].length, signalWindow), specCanvasWindow, image, ctx, specData);
 
         let summary = '<table>';
         summary += tableLine('Source:', file.name);

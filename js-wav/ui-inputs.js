@@ -12,7 +12,7 @@ function fireSignalWindowUpdateEvent() {
     document.dispatchEvent(event);
 }
 
-const params = {main:{}, peak:{}};
+const params = {main:{}, peak:{}, selection:{}};
 
 function getUserParams(sampleRate, duration)
 {
@@ -189,5 +189,12 @@ document.addEventListener('DOMContentLoaded', () => {
         await loadFile();
         showFile();
     });
+
+    // Select Tab
+    params.selection.start  = initParam('selection_start', '', ['new-audio']);
+    params.selection.stop   = initParam('selection_stop', '', ['new-audio']);
+    params.selection.min_freq= initParam('selection_min_freq', '', ['new-audio']);
+    params.selection.max_freq= initParam('selection_max_freq', '', ['new-audio']);
+
 
 }); 
