@@ -17,7 +17,6 @@ function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer
     // Process audio data in chunks
     let spectrogramData = [];
     let peakTime = [];
-    let searchPeakTime = [];
     let maxSpectrogramValue = 0;
 
     let start = Math.floor(signalWindow.start * sampleRate);
@@ -35,12 +34,6 @@ function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer
     let maxInTime;
 
     let peakFreq = new Array(numBins);
-    let count = 0;
-
-    let searchFreqPeak={value:0, frame:0, bin:0};
-
-    let searchFirstBin = Math.min(Math.floor(binsPerKHz * params.peakMinFreq), fftSize);
-    let searchLastBin = Math.min(searchFirstBin + Math.floor((params.peakMaxFreq - params.peakMinFreq) * binsPerKHz), numBins);
 
     for (let i = start; i < stop; i += hopSize) {
         const chunk = channelData.slice(i, i + fftSize);
@@ -54,9 +47,7 @@ function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer
 
         const magnitude = new Array(numBins);
 
-        let frameLowPeak = 0;
         let frameBoundedPeak = 0;
-        let frameHighPeak = 0;
 
         for(let j=0;j<fftSize;j++)
         {
@@ -68,45 +59,28 @@ function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer
         for(let j=firstBin;j<lastBin;j++)
         {
             frameBoundedPeak = Math.max(magnitude[j], frameBoundedPeak);
-            //frameBoundedPeak += magnitude[j] / (lastBin-firstBin);
             maxSpectrogramValue = Math.max(magnitude[j], maxSpectrogramValue);
-        }
-
-        for(let j=searchFirstBin;j<searchLastBin;j++)
-        {
-            frameHighPeak = Math.max(magnitude[j], frameHighPeak);
-            if(magnitude[j] > searchFreqPeak.value) searchFreqPeak = {value:magnitude[j], frame:count, bin:j};
         }
 
         spectrogramData.push(magnitude);
         peakTime.push(frameBoundedPeak);
-        searchPeakTime.push(frameHighPeak);
 
         minInTime = (i == start)?frameBoundedPeak:Math.min(minInTime, frameBoundedPeak);
         maxInTime = (i == start)?frameBoundedPeak:Math.max(maxInTime, frameBoundedPeak);
-        count++;
     }
 
-    //let foundCalls = searchForPeaks2(searchPeakTime, spectrogramData, searchFirstBin, searchLastBin);
-    const sortedFreq = peakFreq.toSorted((a, b) => a - b);
-    const magNoiseThreshold = sortedFreq[ Math.round(0.1 * (sortedFreq.length - 1)) ] * 10;
-
-    searchFreqPeak.box = getBox(searchFreqPeak, spectrogramData, searchFirstBin, searchLastBin, magNoiseThreshold); 
-
-    let minInFreq;
-    let maxInFreq;
+    let minInFreq = peakFreq[firstBin];
+    let maxInFreq = peakFreq[firstBin];
 
     for(let j=firstBin;j<lastBin;j++)
     {
-        minInFreq = (j==firstBin)?peakFreq[j]:Math.min(minInFreq, peakFreq[j]);
-        maxInFreq = (j==firstBin)?peakFreq[j]:Math.max(maxInFreq, peakFreq[j]);
+        minInFreq = Math.min(minInFreq, peakFreq[j]);
+        maxInFreq = Math.max(maxInFreq, peakFreq[j]);
     }
 
     return {
         specData:{data: spectrogramData, maxValue: maxSpectrogramValue},
         timeData:{data: peakTime, minValue: minInTime, maxValue: maxInTime},
         freqData:{data: peakFreq, minValue: minInFreq, maxValue: maxInFreq},
-        peak: searchFreqPeak,
-        //foundPeaks: foundCalls
     };
 }

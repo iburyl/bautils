@@ -14,11 +14,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('zoom_peak').addEventListener('click', function () {
+        const signalWindow = window.sharedSignalWindow;
+
+        const sampleRate = signalWindow.sampleRate;
         const numFrames = window.sharedData.timeData.data.length;
         const framesPerSec = window.sharedSignalWindow.duration / numFrames;
         
-        let left  = window.sharedData.peak.box.leftFrame;
-        let right = window.sharedData.peak.box.rightFrame;
+        const {specData, timeData, freqData} = window.sharedData;
+        const peak = calculatePeak(sampleRate, specData.data, freqData.data);
+
+        let left  = peak.box.leftFrame;
+        let right = peak.box.rightFrame;
 
         let len = right - left;
         if( len < numFrames / 20 ) len = Math.ceil(numFrames / 100);
@@ -26,8 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let leftBound = Math.max(0, left - len*3);
         let rightBound = Math.min(numFrames-1, right + len*3);
 
-        paramStart.value = (window.sharedSignalWindow.start + leftBound * framesPerSec).toFixed(4);
-        paramStop.value = (window.sharedSignalWindow.start + rightBound * framesPerSec).toFixed(4);
+        paramStart.value = (signalWindow.start + leftBound * framesPerSec).toFixed(4);
+        paramStop.value = (signalWindow.start + rightBound * framesPerSec).toFixed(4);
 
         fireSignalWindowUpdateEvent();
         showFile();

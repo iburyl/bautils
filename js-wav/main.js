@@ -26,47 +26,20 @@ async function loadFile()
     }
 }
 
-function showFile()
+function updateMainImage()
 {
     const infoDiv = document.getElementById('info');
-    const peakTab = document.getElementById('peak-stats');
-    const ctx = window.ctx;
-    const peakStatsDiv = document.getElementById('peak_stats');
-    const audioElement = document.getElementById('audioPlayer');
-
-    //const file = fileInput.files[0];
+    const info = window.sharedAudioInfo;
     const file = window.sharedFile;
-    if (!file) {
-        alert('Please select a WAV file first');
-        return;
-    }
+    const ctx = window.ctx;
 
-    try {
-        /*
-        const arrayBuffer = await file.arrayBuffer();
+    if(window.sharedData) {
+        const {specData, timeData, freqData} = window.sharedData;
 
-        let {audioContext, info} = getAudioContext(arrayBuffer);
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        const {image, specCanvasWindow} = drawSpectrogram(specData, timeData, freqData, window.sharedSignalWindow, params.main.minE.read(), ctx);
 
-        window.sharedAudioBuffer = audioBuffer;
-        */
-
-        const audioBuffer = window.sharedAudioBuffer;
-        const info = window.sharedAudioInfo;
-
-        const sampleRate = audioBuffer.sampleRate;
-        const duration   = audioBuffer.duration;
-
-        const {signalWindow, params} = getUserParams(sampleRate, duration);
-
-        // Generate spectrogram
-        window.sharedData = generateSpectrogram(params.fftSize, params.hopSize, signalWindow, params, audioBuffer);
-        const {specData, timeData, freqData, peak, foundPeaks} = window.sharedData;
-
-        // Draw spectrogram with axes
-        const {image, specCanvasWindow} = drawSpectrogram(specData, timeData, freqData, foundPeaks, signalWindow, params.minE, ctx);
-        const {overlayImage} = drawPeaksOverlay([peak],
-            getSignalWindowMapping(sampleRate, specData.data.length, specData.data[0].length, signalWindow), specCanvasWindow, image, ctx, specData);
+        window.sharedMainImage = image;
+        window.sharedSpecCanvasWindow = specCanvasWindow;
 
         let summary = '<table>';
         summary += tableLine('Source:', file.name);
@@ -92,23 +65,32 @@ function showFile()
 
         }
         summary += '</table>';
-
+    
         infoDiv.innerHTML = summary;
+    }
+}
 
-        window.sharedMainImage = image;
+function updatePeakOverlay()
+{
+    const peakStatsDiv = document.getElementById('peak_stats');
+
+    if(window.sharedData) {
+        console.log('ping 1');
+
+        const signalWindow = window.sharedSignalWindow;
+        const sampleRate = signalWindow.sampleRate;
+        const specCanvasWindow = window.sharedSpecCanvasWindow;
+        const image = window.sharedMainImage;
+        const ctx = window.ctx;
+
+        const {specData, timeData, freqData} = window.sharedData;
+
+        const peak = calculatePeak(sampleRate, specData.data, freqData.data);
+
+        const {overlayImage} = drawPeaksOverlay([peak],
+            getSignalWindowMapping(sampleRate, specData.data.length, specData.data[0].length, signalWindow), specCanvasWindow, image, ctx, specData);
+
         window.sharedPeakImage = overlayImage;
-        window.sharedSpecCanvasWindow = specCanvasWindow;
-        window.sharedSignalWindow = signalWindow;
-
-        if(peakTab.classList.contains('active'))
-        {
-            window.sharedImage = window.sharedPeakImage;
-        }
-        else
-        {
-            window.sharedImage = window.sharedMainImage;
-        }
-        ctx.putImageData(window.sharedImage, 0, 0);
 
         function addStats(name, div, peakData, signalWindow, numFrames, numBins)
         {
@@ -132,7 +114,56 @@ function showFile()
                 '</table>';
         }
         
-        addStats('Found peak', peakStatsDiv, window.sharedData.peak, window.sharedSignalWindow, window.sharedData.timeData.data.length, window.sharedData.specData.data[0].length);
+        addStats('Found peak', peakStatsDiv, peak, window.sharedSignalWindow, window.sharedData.timeData.data.length, window.sharedData.specData.data[0].length);
+    }
+}
+
+function showCurrentImage()
+{
+    const peakTab = document.getElementById('peak-stats');
+    const ctx = window.ctx;
+
+    if(peakTab.classList.contains('active'))
+    {
+        console.log('ping 2');
+        window.sharedImage = window.sharedPeakImage;
+    }
+    else
+    {
+        window.sharedImage = window.sharedMainImage;
+    }
+    ctx.putImageData(window.sharedImage, 0, 0);
+}
+
+function showFile()
+{
+    const peakTab = document.getElementById('peak-stats');
+    const ctx = window.ctx;
+    const peakStatsDiv = document.getElementById('peak_stats');
+    const audioElement = document.getElementById('audioPlayer');
+
+    //const file = fileInput.files[0];
+    const file = window.sharedFile;
+    if (!file) {
+        alert('Please select a WAV file first');
+        return;
+    }
+
+    try {
+        const audioBuffer = window.sharedAudioBuffer;
+
+        const sampleRate = audioBuffer.sampleRate;
+        const duration   = audioBuffer.duration;
+
+        const {signalWindow, params} = getUserParams(sampleRate, duration);
+        window.sharedSignalWindow = signalWindow;
+
+        // Generate spectrogram
+        window.sharedData = generateSpectrogram(params.fftSize, params.hopSize, signalWindow, params, audioBuffer);
+
+        updateMainImage();
+        updatePeakOverlay();
+        showCurrentImage();
 
         audioElement.currentTime = signalWindow.start;
     } 

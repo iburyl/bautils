@@ -100,7 +100,7 @@ function drawFreqWindow(firstBin, lastBin, freqCanvasWindow, freqData, ctx) {
     }
 }
 
-function drawSpectrogram(specData, timeData, freqData, foundPeaks, signalWindow, minE, ctx) {
+function drawSpectrogram(specData, timeData, freqData, signalWindow, minE, ctx) {
     const duration = signalWindow.duration;
     const sampleRate = signalWindow.sampleRate;
 

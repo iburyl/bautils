@@ -1,5 +1,37 @@
 "use strict";
 
+function calculatePeak(sampleRate, spectrogramData, peakFreq)
+{
+    const fftSize = spectrogramData[0].length-1;
+    const numBins = fftSize+1;
+    const binsPerKHz = numBins/sampleRate*1000;        
+
+    let searchMinFreq = params.peak.minFreq.read();
+    let searchMaxFreq = params.peak.maxFreq.read();
+    if(searchMaxFreq == 0) searchMaxFreq = sampleRate/2/1000;
+
+    let searchFirstBin = Math.min(Math.floor(binsPerKHz * searchMinFreq), fftSize);
+    let searchLastBin = Math.min(searchFirstBin + Math.floor((searchMaxFreq - searchMinFreq) * binsPerKHz), numBins);
+
+    let searchFreqPeak={value:0, frame:0, bin:0};
+
+    for(let frame=0; frame<spectrogramData.length; frame++)
+    {
+        for(let bin=searchFirstBin; bin<searchLastBin; bin++)
+        {
+            const magnitude = spectrogramData[frame][bin];
+            if(magnitude > searchFreqPeak.value) searchFreqPeak = {value:magnitude, frame:frame, bin:bin};
+        }
+    }
+
+    const sortedFreq = peakFreq.toSorted((a, b) => a - b);
+    const magNoiseThreshold = sortedFreq[ Math.round(0.1 * (sortedFreq.length - 1)) ] * 10;
+
+    searchFreqPeak.box = getBox(searchFreqPeak, spectrogramData, searchFirstBin, searchLastBin, magNoiseThreshold);
+
+    return searchFreqPeak;
+}
+
 function getBoxStats(peak)
 {
     const minMagnitudeDrop = -20 * Math.min(Math.log10(peak.value / peak.box.leftPath.at(-1).value), Math.log10(peak.value / peak.box.rightPath.at(-1).value));

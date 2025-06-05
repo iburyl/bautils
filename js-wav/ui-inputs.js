@@ -170,8 +170,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }        
     } );
     params.peak.maxFreq      = initParam('peak_max_freq', '');
-    params.peak.leftMagFall  = initParam('left_mag_fall', '');
-    params.peak.rightMagFall = initParam('right_mag_fall', '');
+    params.peak.leftMagFall  = initParam('left_mag_fall', '', [], (el) => {
+        //showSelection();
+        updatePeakOverlay();
+        showCurrentImage();
+    });
+    params.peak.rightMagFall = initParam('right_mag_fall', '', [], (el) => {
+        //showSelection();
+        updatePeakOverlay();
+        showCurrentImage();
+    });
     
     fileInput.addEventListener('change', async function() {
         const file = fileInput.files[0];
