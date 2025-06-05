@@ -40,6 +40,13 @@
             box-shadow: -20px 0 20px -10px rgba(0, 0, 0, 0.3),
                          20px 0 20px -10px rgba(0, 0, 0, 0.3);
         }
+        .footer {            
+            background-color: #e8e8e8;
+            padding: 20px 40px;
+            box-shadow: -20px 0 20px -10px rgba(0, 0, 0, 0.3),
+                         20px 0 20px -10px rgba(0, 0, 0, 0.3);
+            color: #666666;
+        }
         .header img {
             vertical-align: middle;
         }
@@ -49,9 +56,9 @@
             gap: 20px;
             background-color: #fff;
             padding: 20px;
-            min-height: 100vh;
+            /*min-height: 100vh;
             height: auto;
-            overflow-y: auto;
+            overflow-y: auto;*/
             box-shadow: -20px 0 20px -10px rgba(0, 0, 0, 0.3),
                          20px 0 20px -10px rgba(0, 0, 0, 0.3);
 /*
@@ -326,6 +333,19 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div class="footer">
+      <p>BansheeLab.app was originally designed for analyzing the characteristics of nature recordings available online on desktop and laptop computers.
+      The platform specializes in bird and bat call recordings, with mobile usage not currently supported.
+      The current design focuses on simple in-browser audio recording analysis. Application design is serverless - no audio data is leaving the browser.</p>
+      
+      <p>Technical Requirements: Modern browser with Web Audio API support (Chrome, Firefox, Safari, Edge). 
+      Supports WAV files up to reasonable sizes for optimal performance.
+      Should work with other audio formats as well, but some features will not be available</p>
+      
+      <p>
+      <a href="https://github.com/iburyl/bautils" title="View the source code on GitHub"><img src="img/github-mark.svg" height="25" /></a>
+      </p>
     </div>
     <script src="js-depends/fft.js"></script>
     <script src="js-wav/utils-draw.js"></script>

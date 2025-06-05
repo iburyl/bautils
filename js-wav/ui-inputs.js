@@ -168,15 +168,22 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             if( targetValue < userMaxFreq ) el.value = targetValue; else el.value = (userMaxFreq+userMinFreq)/2;
         }        
+
+        if(el == dep)
+        {
+            updatePeakOverlay();
+            showCurrentImage();
+        }
     } );
-    params.peak.maxFreq      = initParam('peak_max_freq', '');
+    params.peak.maxFreq      = initParam('peak_max_freq', '', [], (el) => {
+        updatePeakOverlay();
+        showCurrentImage();
+    });
     params.peak.leftMagFall  = initParam('left_mag_fall', '', [], (el) => {
-        //showSelection();
         updatePeakOverlay();
         showCurrentImage();
     });
     params.peak.rightMagFall = initParam('right_mag_fall', '', [], (el) => {
-        //showSelection();
         updatePeakOverlay();
         showCurrentImage();
     });
