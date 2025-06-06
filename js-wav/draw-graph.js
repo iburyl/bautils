@@ -1,5 +1,11 @@
 "use strict";
 
+// Draw favicon in upper right corner
+const favicon_image = new Image();
+let favicon_read = false;
+favicon_image.onload = function() { favicon_read = true; };
+favicon_image.src = favicon_base64;
+
 function drawSpectrogramWindow(firstFrame, lastFrame, firstBin, lastBin, specCanvasWindow, specData, minE, ctx) {
     let numFrames = lastFrame - firstFrame;
     let numBins   = lastBin - firstBin;
@@ -75,7 +81,7 @@ function drawFreqWindow(firstBin, lastBin, freqCanvasWindow, freqData, ctx) {
     const binsPerPixel = Math.max(Math.floor(numBins / freqCanvasWindow.height), 1);
 
     ctx.fillStyle = magnitudeToRGBDark(0, 0, 1);
-    ctx.fillRect(freqCanvasWindow.x, freqCanvasWindow.y-freqCanvasWindow.height, freqCanvasWindow.width, freqCanvasWindow.height);
+    ctx.fillRect(freqCanvasWindow.x, freqCanvasWindow.y-freqCanvasWindow.height+1, freqCanvasWindow.width, freqCanvasWindow.height);
 
     const bar_color = magnitudeToRGBDark(1, 0, 1);
 
@@ -140,6 +146,10 @@ function drawSpectrogram(specData, timeData, freqData, signalWindow, minE, ctx) 
 
     // Clear mainCanvas
     ctx.clearRect(0, 0, width, height);
+    // Fill background with white color to avoid transparent background when saving
+    ctx.fillStyle = '#f5f5f5';
+    ctx.fillRect(0, 0, width, height);
+
 
     const binsPerKHz = numBins/sampleRate*1000;
     
@@ -159,6 +169,22 @@ function drawSpectrogram(specData, timeData, freqData, signalWindow, minE, ctx) 
 
     drawTimeAxisX(signalWindow, specCanvasWindow, TICK_LENGTH, LABEL_PADDING, ctx);
     drawFreqAxisY(signalWindow, specCanvasWindow, TICK_LENGTH, LABEL_PADDING, ctx);
+
+    if(favicon_read) {
+        const margin = 1; // Margin from edges
+        const faviconSize = freqWidth - margin*2; // Size of the favicon
+        const x = width - freqWidth - margin + 2 ;
+        const y = margin - 1;
+
+        // Apply grayscale filter and set opacity
+        ctx.filter = 'grayscale(100%) invert(100%)';
+        ctx.globalAlpha = 0.15;
+        ctx.drawImage(favicon_image, x, y, faviconSize, faviconSize);
+        
+        // Reset filter and opacity back to defaults
+        ctx.filter = 'none';
+        ctx.globalAlpha = 1.0;
+    }
 
     return {image: ctx.getImageData(0, 0, width, height), specCanvasWindow: specCanvasWindow};
 }
