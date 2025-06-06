@@ -3,12 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>bansheelab.app - bioacoustics utilities</title>
+    <meta name="description" content="BansheeLab.app - Professional bioacoustics analysis tools for bird and bat call recordings. Browser-based spectrogram analysis with advanced audio processing features.">
+    <meta name="keywords" content="bioacoustics, spectrogram, audio analysis, bird calls, bat calls, sound analysis">
+    <meta name="author" content="BansheeLab">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://bansheelab.app/">
+    <meta property="og:title" content="BansheeLab.app - Bioacoustics Utilities">
+    <meta property="og:description" content="Professional bioacoustics analysis tools for bird and bat call recordings. Browser-based spectrogram analysis with advanced audio processing features.">
+    <meta property="og:image" content="https://bansheelab.app/img/favicon.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://bansheelab.app/">
+    <meta property="twitter:title" content="BansheeLab.app - Bioacoustics Utilities">
+    <meta property="twitter:description" content="Professional bioacoustics analysis tools for bird and bat call recordings.">
+    <meta property="twitter:image" content="https://bansheelab.app/img/favicon.png">
+    
+    <title>BansheeLab.app - Bioacoustics Utilities</title>
     <link rel="icon" href="img/favicon.png" type="image/png">
     <style>
+        /* ==========================================================================
+           BASE STYLES
+           ========================================================================== */
+        
         html {
             overflow-y: scroll;
         }
+        
         body {
             font-family: Arial, sans-serif;
             max-width: 1640px;
@@ -16,10 +39,10 @@
             padding: 20px;
             background-color: #444;
         }
+        
         h1 {
             font-size: 1.4em;
-            margin-block-start: 0.2em;
-            margin-block-end: 0.8em;
+            margin: 0;
             font-weight: 500;
             color: #444;
             text-align: center;
@@ -27,9 +50,13 @@
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             text-shadow: 0.5px 0.5px 0.5px rgba(0,0,0,0.05);
             display: inline-block;
-            margin: 0;
             vertical-align: middle;
         }
+
+        /* ==========================================================================
+           LAYOUT COMPONENTS
+           ========================================================================== */
+        
         .header {
             display: flex;
             align-items: center;
@@ -40,6 +67,21 @@
             box-shadow: -20px 0 20px -10px rgba(0, 0, 0, 0.3),
                          20px 0 20px -10px rgba(0, 0, 0, 0.3);
         }
+        
+        .header img {
+            vertical-align: middle;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: -20px 0 20px -10px rgba(0, 0, 0, 0.3),
+                         20px 0 20px -10px rgba(0, 0, 0, 0.3);
+        }
+        
         .footer {            
             background-color: #e8e8e8;
             padding: 20px 40px;
@@ -47,44 +89,30 @@
                          20px 0 20px -10px rgba(0, 0, 0, 0.3);
             color: #666666;
         }
-        .header img {
-            vertical-align: middle;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            background-color: #fff;
-            padding: 20px;
-            /*min-height: 100vh;
-            height: auto;
-            overflow-y: auto;*/
-            box-shadow: -20px 0 20px -10px rgba(0, 0, 0, 0.3),
-                         20px 0 20px -10px rgba(0, 0, 0, 0.3);
-/*
-            box-shadow: -20px 0 20px -10px rgba(200, 200, 200, 0.2),
-                         20px 0 20px -10px rgba(200, 200, 200, 0.2);
-*/
-        }
-        .tabs-container {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-        }
+
+        /* ==========================================================================
+           INPUT & FORM ELEMENTS
+           ========================================================================== */
+        
         .input_list {
             display: flex;
             gap: 20px;
             align-items: center;
             padding-bottom: 10px;
         }
-        canvas {
-            border: 1px solid #ccc;
-            background-color: #f5f5f5;
+        
+        .tabs-container input, 
+        select {
+            width: 160px;
+            box-sizing: border-box;
+            padding: 2px;
+            font: inherit;
         }
-        .buttons_line {
-            display: flex;
-            gap: 30px;
-        }
+        
+        /* ==========================================================================
+           BUTTONS
+           ========================================================================== */
+        
         button {
             padding: 5px 5px;
             background-color: #4CAF50;
@@ -93,35 +121,34 @@
             border-radius: 4px;
             cursor: pointer;
         }
+        
         button:hover {
             background-color: #45a049;
             color: white;
         }
-
-        div#info {
-            max-width: 100%;
-            overflow-x: auto;
+        
+        .buttons_line {
+            display: flex;
+            gap: 30px;
         }
 
-        div#info table {
-            table-layout: auto;
-            width: 100%;
+        /* ==========================================================================
+           TAB SYSTEM
+           ========================================================================== */
+        
+        .tabs-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
         }
-
-        div#info table td {
-            max-width: 400px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Tab styles */
+        
         .tabs {
             display: flex;
             gap: 2px;
             border-bottom: 1px solid #ccc;
             margin-bottom: 0px;
         }
+        
         .tab-button {
             padding: 10px 20px;
             background-color: #f1f1f1;
@@ -131,31 +158,38 @@
             cursor: pointer;
             border-radius: 4px 4px 0 0;
         }
+        
         .tab-button.active {
             background-color: white;
             border-bottom: 1px solid white;
             margin-bottom: -1px;
         }
+        
         .tab-button.active:hover {
             color: black;
         }
+        
         .tab-content {
             display: none;
             padding: 20px;
             border: 1px solid #ccc;
             border-top: none;
         }
+        
         .tab-content.active {
             display: block;
         }
+        
         .tab-layout {
             display: flex;
             gap: 20px;
         }
+        
         .tab-inputs {
             flex: 1;
             min-width: 0;
         }
+        
         .tab-text {
             flex: 1;
             min-width: 0;
@@ -163,48 +197,95 @@
             background-color: #f9f9f9;
             border-radius: 4px;
         }
-        .tabs-container input, select {
-            width: 160px;
-            box-sizing: border-box;
-            padding: 2px;
-            font: inherit;
+
+        /* ==========================================================================
+           CANVAS & MEDIA ELEMENTS
+           ========================================================================== */
+        
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #f5f5f5;
         }
+
+        /* ==========================================================================
+           DATA DISPLAY & TABLES
+           ========================================================================== */
+        
+        div#info {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        
+        div#info table {
+            table-layout: auto;
+            width: 100%;
+        }
+        
+        div#info table td {
+            max-width: 400px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ==========================================================================
+           UI COMPONENTS
+           ========================================================================== */
+        
         .tooltip {
             position: absolute;
             display: none;
             background-color: rgba(0, 0, 0, 0.8);
             color: white;
             padding: 5px 10px;
-            border-radius : 4px;
+            border-radius: 4px;
             font-size: 12px;
             pointer-events: none;
             z-index: 1000;
         }
+
+        /* ==========================================================================
+           ACCESSIBILITY
+           ========================================================================== */
+        
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        small {
+            font-size: 0.875em;
+            color: #666;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <img src="img/favicon.png" height=60 />
+    <header class="header">
+        <img src="img/favicon.png" height="60" alt="BansheeLab logo" />
         <h1>BansheeLab.app</h1>
-    </div>
+    </header>
     <div class="container">
         <div class="input_list">
-            <input type="file" id="wavFile" accept=".wav" />
-            <!--
-            Does not work
-            <div>or URL</div>
-            <input type="text" id="wavFileUrl" style="width: 50%;" />
-            <button id="load">load</button>
-            -->
+            <label for="wavFile" class="sr-only">Choose WAV audio file</label>
+            <input type="file" id="wavFile" accept=".wav" aria-describedby="wavFile-help" />
+            <small id="wavFile-help">Select an audio file for analysis</small>
         </div>
 
         <div class="input_list">
-        <audio id="audioPlayer" controls></audio>
-        <button id="ratio_1_1">1:1</button>
-        <button id="ratio_3_2">3:2</button>
-        <button id="ratio_max">max</button>
+            <audio id="audioPlayer" controls aria-label="Audio player for loaded file"></audio>
+            <button id="ratio_1_1" aria-label="Set display ratio to 1:1">1:1</button>
+            <button id="ratio_3_2" aria-label="Set display ratio to 3:2">3:2</button>
+            <button id="ratio_max" aria-label="Maximize display ratio">max</button>
         </div>
-        <canvas id="mainCanvas"></canvas>
+        <canvas id="mainCanvas" aria-label="Audio spectrogram visualization"></canvas>
         <div class="buttons_line">
         <div class="buttons_group">
             <button id="move_left_fast">&#x25C0;&#x25C0;</button>
@@ -224,16 +305,15 @@
 
         <!-- Tabs -->
         <div class="tabs-container">
-            <div class="tabs">
-                <button class="tab-button active" data-tab="main">Main</button>
-                <button class="tab-button" data-tab="peak-stats">Peak Stats</button>
-                <!--<button class="tab-button" data-tab="sequences">Sequences</button>-->
-                <button class="tab-button" data-tab="selection">Selection</button>
-                <button class="tab-button" data-tab="refine">Refine</button>
+            <div class="tabs" role="tablist" aria-label="Analysis tool tabs">
+                <button class="tab-button active" data-tab="main" role="tab" aria-selected="true" aria-controls="main" id="tab-main">Main</button>
+                <button class="tab-button" data-tab="peak-stats" role="tab" aria-selected="false" aria-controls="peak-stats" id="tab-peak-stats">Peak Stats</button>
+                <button class="tab-button" data-tab="selection" role="tab" aria-selected="false" aria-controls="selection" id="tab-selection">Selection</button>
+                <button class="tab-button" data-tab="refine" role="tab" aria-selected="false" aria-controls="refine" id="tab-refine">Refine</button>
             </div>
 
             <!-- Main Tab -->
-            <div id="main" class="tab-content active">
+            <div id="main" class="tab-content active" role="tabpanel" aria-labelledby="tab-main">
                 <div class="tab-layout">
                     <div class="tab-inputs">
                         <div class="input_list">
@@ -273,7 +353,7 @@
                             <div>Search min freq (KHz)<br /><input type="text" id="peak_min_freq"></div>
                             <div>Search max freq (KHz)<br /><input type="text" id="peak_max_freq"></div>
                             <div>Left magnitude fall<br /><input type="text" id="left_mag_fall"></div>
-                            <div>Reft magnitude fall<br /><input type="text" id="right_mag_fall"></div>
+                            <div>Right magnitude fall<br /><input type="text" id="right_mag_fall"></div>
                         </div>
                         <div class="input_list">
                             <button id="zoom_peak">Zoom in peak</button>
@@ -334,7 +414,7 @@
             </div>
         </div>
     </div>
-    <div class="footer">
+    <footer class="footer">
       <p>BansheeLab.app was originally designed for analyzing the characteristics of nature recordings available online on desktop and laptop computers.
       The platform specializes in bird and bat call recordings, with mobile usage not currently supported.
       The current design focuses on simple in-browser audio recording analysis. Application design is serverless - no audio data is leaving the browser.</p>
@@ -344,10 +424,10 @@
       Should work with other audio formats as well, but some features will not be available</p>
       
       <p>
-      <a href="https://github.com/iburyl/bautils" title="View the source code on GitHub" target="_blank"><img src="img/github-mark.svg" height="25" /></a>
-      <a href="https://discord.com/channels/1380574314071330906/1380574315061448916" title="BansheeLab channel in Discord" target="_blank"><img src="img/Discord-Symbol-Black.svg" height="25" /></a>
+      <a href="https://github.com/iburyl/bautils" title="View the source code on GitHub" target="_blank" rel="noopener noreferrer"><img src="img/github-mark.svg" height="25" alt="GitHub repository" /></a>
+      <a href="https://discord.com/channels/1380574314071330906/1380574315061448916" title="BansheeLab channel in Discord" target="_blank" rel="noopener noreferrer"><img src="img/Discord-Symbol-Black.svg" height="25" alt="Discord channel" /></a>
       </p>
-    </div>
+    </footer>
     <script src="js-depends/fft.js"></script>
     <script src="js-wav/utils-draw.js"></script>
     <script src="js-wav/utils-math.js"></script>
