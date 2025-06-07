@@ -75,8 +75,6 @@ function updatePeakOverlay()
     const peakStatsDiv = document.getElementById('peak_stats');
 
     if(window.sharedData) {
-        console.log('ping 1');
-
         const signalWindow = window.sharedSignalWindow;
         const sampleRate = signalWindow.sampleRate;
         const specCanvasWindow = window.sharedSpecCanvasWindow;
@@ -159,9 +157,14 @@ function showFile()
         window.sharedSignalWindow = signalWindow;
 
         // Generate spectrogram
-        window.sharedData = generateSpectrogram(params.fftSize, params.hopSize, signalWindow, params, audioBuffer);
+        console.time('generateSpectrogram');
+        window.sharedData = generateSpectrogram(params.fftSize, params.hopSize, signalWindow, params, audioBuffer); // Optimized
+        console.timeEnd('generateSpectrogram');
 
+        console.time('updateMainImage');
         updateMainImage();
+        console.timeEnd('updateMainImage');
+        
         updatePeakOverlay();
         showCurrentImage();
 

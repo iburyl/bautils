@@ -1,12 +1,6 @@
 "use strict";
 
-function magnitudeToRGBDark(mag, minMag, maxMag, opacity) {
-    /*
-    let gradient = [
-        {point: 0   ,r:255,g:255,b:255},
-        {point: 1   ,r:  0,g:  0,b:  0},
-        ];
-    */
+function magnitudeToRGBDarkArray(mag, minMag, maxMag) {
     let gradient = [
         {point: 0   ,r:  0,g:  0,b:0},
         {point: 0.5 ,r:  0,g:180,b:0},
@@ -28,9 +22,17 @@ function magnitudeToRGBDark(mag, minMag, maxMag, opacity) {
     const g = Math.round(gradient[i-1].g + inner_point*(gradient[i].g - gradient[i-1].g));
     const b = Math.round(gradient[i-1].b + inner_point*(gradient[i].b - gradient[i-1].b));
     
+    return [r,g,b];
+}
+
+function magnitudeToRGBDark(mag, minMag, maxMag, opacity) {
+    // Reuse magnitudeToRGBDarkArray for the color calculation
+    const [r, g, b] = magnitudeToRGBDarkArray(mag, minMag, maxMag);
+    
     if(!opacity) return `rgb(${r} ${g} ${b})`;
 
     const css_opac = opacity.toFixed(2);
 
     return `rgb(${r} ${g} ${b} / ${css_opac})`;
 }
+

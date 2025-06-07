@@ -10,38 +10,55 @@ function drawSpectrogramWindow(firstFrame, lastFrame, firstBin, lastBin, specCan
     let numFrames = lastFrame - firstFrame;
     let numBins   = lastBin - firstBin;
 
-    // Draw spectrogram
+    // Pre-calculate values to avoid repeated calculations
     const framesPerPixel = Math.max(Math.floor(numFrames / specCanvasWindow.width), 1);
-    const binsPerPixel = Math.max(Math.floor(numBins / specCanvasWindow.height), 1);
+    const binsPerPixel = Math.max(Math.floor(numBins / (specCanvasWindow.height-1)), 1);
+    const minLog = minE;
+    const logMaxValue = Math.log(specData.maxValue);
+    const logRange = logMaxValue - minLog;
+    
+    // Create ImageData for direct pixel manipulation (much faster than fillRect)
+    const imageData = ctx.createImageData(specCanvasWindow.width, specCanvasWindow.height);
+    const data = imageData.data;
 
-    for(let x=0; x<specCanvasWindow.width; x++) {
-        for(let y=0; y<specCanvasWindow.height; y++) {
-            let firstPixelFrame = firstFrame + Math.floor(x * numFrames / specCanvasWindow.width);
-            let firstPixelBin = firstBin + Math.floor(y * numBins / specCanvasWindow.height);
-
+    for(let x = 0; x < specCanvasWindow.width; x++) {
+        const firstPixelFrame = firstFrame + Math.floor(x * numFrames / specCanvasWindow.width);
+        
+        for(let y = 0; y < specCanvasWindow.height-1; y++) {
+            const firstPixelBin = firstBin + Math.floor(y * numBins / specCanvasWindow.height);
+            
             let value = specData.data[firstPixelFrame][firstPixelBin];
 
-            if(framesPerPixel*binsPerPixel > 1)
-            {
-                for(let xx=0; xx<framesPerPixel; xx++) {
-                    for(let yy=0; yy<binsPerPixel; yy++) {
+            // Aggregate values if multiple bins/frames per pixel
+            if(framesPerPixel * binsPerPixel > 1) {
+                for(let xx = 0; xx < framesPerPixel; xx++) {
+                    for(let yy = 0; yy < binsPerPixel; yy++) {
                         value = Math.max(value, specData.data[firstPixelFrame + xx][firstPixelBin + yy]);
                     }
                 }
             }
 
+            // Normalize value
             let normalizedValue = Math.log(value);
-            let minLog = minE;
             if(normalizedValue < minLog) normalizedValue = minLog;
-            normalizedValue = (normalizedValue - minLog) / (Math.log(specData.maxValue) - minLog);
+            normalizedValue = (normalizedValue - minLog) / logRange;
 
-            const colorValue = 255 - Math.floor(normalizedValue * 255);
-            ctx.fillStyle = `rgb(${colorValue}, ${colorValue}, ${colorValue})`;
-
-            ctx.fillStyle = magnitudeToRGBDark(normalizedValue, 0, 1);
-            ctx.fillRect(specCanvasWindow.x+x, specCanvasWindow.y-y, 1, 1);
+            // Convert to RGB using magnitudeToRGBDark function
+            const rgbColor = magnitudeToRGBDarkArray(normalizedValue, 0, 1);
+            
+            // Calculate pixel index (note: y is flipped for canvas coordinates)
+            const pixelIndex = ((specCanvasWindow.height - 1 - y) * specCanvasWindow.width + x) * 4;
+            
+            // Set RGBA values directly
+            data[pixelIndex] = rgbColor[0];       // Red
+            data[pixelIndex + 1] = rgbColor[1];   // Green  
+            data[pixelIndex + 2] = rgbColor[2];   // Blue
+            data[pixelIndex + 3] = 255; // Alpha (fully opaque)
         }
     }
+    
+    // Draw the entire ImageData at once (much faster than individual fillRect calls)
+    ctx.putImageData(imageData, specCanvasWindow.x, specCanvasWindow.y - specCanvasWindow.height);
 }
 
 function drawTimeWindow(firstFrame, lastFrame, timeCanvasWindow, timeData, ctx) {
@@ -156,7 +173,9 @@ function drawSpectrogram(specData, timeData, freqData, signalWindow, minE, ctx) 
     const firstBin = Math.floor(signalWindow.minFreq * binsPerKHz);
     const lastBin = Math.min(firstBin + Math.floor((signalWindow.maxFreq - signalWindow.minFreq) * binsPerKHz), numBins);
 
-    drawSpectrogramWindow(0, numFrames, firstBin, lastBin, specCanvasWindow, specData, minE, ctx);
+    // Use the optimized version for performance comparison
+    // Change this line to switch between versions:
+    drawSpectrogramWindow(0, numFrames, firstBin, lastBin, specCanvasWindow, specData, minE, ctx);  // Original
     drawTimeWindow(0, numFrames, timeCanvasWindow, timeData, ctx);
     drawFreqWindow(firstBin, lastBin, freqCanvasWindow, freqData, ctx);
 
