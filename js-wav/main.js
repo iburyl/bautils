@@ -100,11 +100,12 @@ function updatePeakOverlay()
             div.innerHTML =
                 '<table>' +
                 tableLine(name, ''  ) +
-                tableLine('Min mag. from peak:',  (peakData.box.magnitudeDrop).toFixed(1) + ' dB '  ) + 
+                tableLine('Left mag. drop:',  (peakData.box.leftMagnitudeDrop).toFixed(1) + ' dB '  ) + 
+                tableLine('Right mag. drop:',  (peakData.box.rightMagnitudeDrop).toFixed(1) + ' dB '  ) + 
                 tableLine('Noise mag. from peak:',  (peakData.box.noiseThreshold).toFixed(1) + ' dB '  ) + 
-                tableLine('Time (start):',  (signalWindow.start + peakData.box.left * framesPerSec).toFixed(4) + ' s' ) + 
-                tableLine('Dur (duration):',  ((peakData.box.right - peakData.box.left) * framesPerSec).toFixed(4) + ' s  '  ) + 
-                tableLine('Start to peak mag.:',  ( (peakData.frame - peakData.box.left) / (peakData.box.right - peakData.box.left) ).toFixed(2)  ) + 
+                tableLine('Time (start):',  (signalWindow.start + peakData.box.leftFrame * framesPerSec).toFixed(4) + ' s' ) + 
+                tableLine('Dur (duration):',  ((peakData.box.rightFrame - peakData.box.leftFrame) * framesPerSec).toFixed(4) + ' s  '  ) + 
+                tableLine('Start to peak mag.:',  ( (peakData.frame - peakData.box.leftFrame) / (peakData.box.rightFrame - peakData.box.leftFrame) ).toFixed(2)  ) + 
                 tableLine('Fmax (highest frequency):', (peakData.box.maxFreq * binToKHz).toFixed(1) + ' KHz  ' ) + 
                 tableLine('FME (frequency of most energy):', (peakData.bin * binToKHz).toFixed(1) + ' KHz  '  ) + 
                 tableLine('Fmean (mean frequency):', (peakData.box.meanFreq * binToKHz).toFixed(1) + ' KHz  '  ) + 

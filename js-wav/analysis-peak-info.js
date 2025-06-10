@@ -36,22 +36,38 @@ function calculatePeak(sampleRate, spectrogramData, peakFreq)
 
 function getBoxStats(peak)
 {
-    const minMagnitudeDrop = -20 * Math.min(Math.log10(peak.value / peak.box.leftPath.at(-1).value), Math.log10(peak.value / peak.box.rightPath.at(-1).value));
+    const path = peak.box.path;
     const noiseThreshold = -20 * Math.log10(peak.value / peak.box.magNoiseThreshold);
+    
+    // Find the peak point in the merged path (should be the point with highest value)
+    let peakIndex = 0;
+    let maxValue = path[0].value;
+    for(let i = 1; i < path.length; i++) {
+        if(path[i].value > maxValue) {
+            maxValue = path[i].value;
+            peakIndex = i;
+        }
+    }
+    
+    // Calculate magnitude drops separately for left and right
+    const leftMagnitudeDrop = peakIndex > 0 ? 
+        -20 * Math.log10(peak.value / path[0].value) : 0;
+    const rightMagnitudeDrop = peakIndex < path.length - 1 ? 
+        -20 * Math.log10(peak.value / path.at(-1).value) : 0;
 
-    function getSum(path)
+    function calculateFrequencySum(pathSegment)
     {
         let pointsInFrame=0;
         let sumInFrame=0;
         let sum=0;
         let frames=0;
 
-        for(let i=1; i<path.length; i++)
+        for(let i=1; i<pathSegment.length; i++)
         {
             pointsInFrame++;
-            sumInFrame += path[i].bin;
+            sumInFrame += pathSegment[i].bin;
 
-            if(path[i].frame != path[i-1].frame)
+            if(pathSegment[i].frame != pathSegment[i-1].frame)
             {
                 sum += sumInFrame / pointsInFrame;
                 frames++;
@@ -64,19 +80,44 @@ function getBoxStats(peak)
         return [sum, frames];
     }
 
-    const [lSum, lFrames] = getSum(peak.box.leftPath);
-    const [rSum, rFrames] = getSum(peak.box.rightPath);
-    const Fmean = (lSum+rSum)/(lFrames+rFrames);
+    const [pathSum, pathFrames] = calculateFrequencySum(path);
+    const Fmean = pathSum / pathFrames;
+    
+    // Calculate frequencies from path
+    const left_freq = path[0].bin;
+    const right_freq = path.at(-1).bin;
+    
+    // Calculate min/max frequencies from entire path and find key points
+    let minFreq = path[0].bin;
+    let maxFreq = path[0].bin;
+    let minFreqPoint = path[0];
+    let maxFreqPoint = path[0];
+    let maxMagPoint = path[peakIndex];
+    
+    for(const point of path) {
+        if(point.bin < minFreq) {
+            minFreq = point.bin;
+            minFreqPoint = point;
+        }
+        if(point.bin > maxFreq) {
+            maxFreq = point.bin;
+            maxFreqPoint = point;
+        }
+    }
 
-    peak.box.magnitudeDrop = minMagnitudeDrop;
+    peak.box.leftMagnitudeDrop = leftMagnitudeDrop;
+    peak.box.rightMagnitudeDrop = rightMagnitudeDrop;
     peak.box.noiseThreshold = noiseThreshold;
-    peak.box.left = peak.box.leftFrame;
-    peak.box.right = peak.box.rightFrame;
-    peak.box.left_freq = peak.box.leftPath.at(-1).bin;
-    peak.box.right_freq = peak.box.rightPath.at(-1).bin;
-    peak.box.minFreq = peak.box.minBin;
-    peak.box.maxFreq = peak.box.maxBin;
+    peak.box.leftFrame = peak.box.leftFrame;
+    peak.box.rightFrame = peak.box.rightFrame;
+    peak.box.leftFreq = left_freq;
+    peak.box.rightFreq = right_freq;
+    peak.box.minFreq = minFreq;
+    peak.box.maxFreq = maxFreq;
     peak.box.meanFreq = Fmean;
+    peak.box.minFreqPoint = minFreqPoint;
+    peak.box.maxFreqPoint = maxFreqPoint;
+    peak.box.maxMagPoint = maxMagPoint;
 }
 
 function detectRidgeSubPixel(lastFrame, lastBin, binWindow, frameDirection, lastYMove, spectrogramData)
@@ -182,12 +223,19 @@ function getBox(peakStat, spectrogramData, lowBin, upperBin, magNoiseThreshold=0
     makePath(firstPoint, +1, spectrogramData, rightMagDropCoeff, rightNoiseThreshold, rightPath);
     makePath(firstPoint, -1, spectrogramData, leftMagDropCoeff, leftNoiseThreshold, leftPath);
     
-    const right = (rightPath.length>0)?rightPath[rightPath.length-1].frame:startFrame;
-    const left  = (leftPath.length>0)?leftPath[leftPath.length-1].frame:startFrame;
+    // Merge paths into a single path with starting point in the middle
+    const singlePath = [
+        ...leftPath.reverse(),
+        {bin: startBin, frame: startFrame, value: value},
+        ...rightPath
+    ];
+    
+    const right = singlePath[singlePath.length - 1].frame;
+    const left  = singlePath[0].frame;
 
     return {
         leftFrame:left, rightFrame:right,
         minBin: minF, maxBin: maxF,
-        leftPath: leftPath, rightPath: rightPath,
+        path: singlePath,
         magNoiseThreshold: magNoiseThreshold };
 }
