@@ -27,6 +27,8 @@ function calculatePeak(sampleRate, spectrogramData, peakFreq)
     const sortedFreq = peakFreq.toSorted((a, b) => a - b);
     const magNoiseThreshold = sortedFreq[ Math.round(0.1 * (sortedFreq.length - 1)) ] * 10;
 
+    const value = bilinear(spectrogramData, searchFreqPeak.frame, searchFreqPeak.bin);
+    
     searchFreqPeak.box = getBox(searchFreqPeak, spectrogramData, searchFirstBin, searchLastBin, magNoiseThreshold);
 
     return searchFreqPeak;
@@ -77,107 +79,67 @@ function getBoxStats(peak)
     peak.box.meanFreq = Fmean;
 }
 
-function detectRidgeQuick(lastFrame, lastBin, binWindow, frameDirection, lastYMove, spectrogramData)
-{
-    const frame=lastFrame+frameDirection;
-    const numBins=spectrogramData[0].length;
-
-    let binWindowStart = Math.max(lastBin-binWindow, 0);
-    let binWindowStop  = Math.min(lastBin+binWindow, numBins);
-
-    let inFramePeakBin = binWindowStart;
-    let inFramePeakValue = spectrogramData[frame][inFramePeakBin];
-    
-    // check +/- binWIndow and find next peak
-    for(let j=binWindowStart; j<=binWindowStop; j++) if(spectrogramData[frame][j] > inFramePeakValue) {inFramePeakValue=spectrogramData[frame][j]; inFramePeakBin=j;}
-    
-    // if it went out of small search window, find further for local maximum,
-    // following outside of the window, while it monotonically increses the value
-    if(inFramePeakBin==binWindowStart)
-    {
-        while(inFramePeakBin>0)
-        {
-            if(spectrogramData[frame][inFramePeakBin-1] < inFramePeakValue) break;
-            inFramePeakBin -= 1;
-            inFramePeakValue=spectrogramData[frame][inFramePeakBin];
-        }
-    }
-    if(inFramePeakBin==binWindowStop)
-    {
-        while(inFramePeakBin<numBins-1)
-        {
-            if(spectrogramData[frame][inFramePeakBin+1] < inFramePeakValue) break;
-            inFramePeakBin += 1;
-            inFramePeakValue=spectrogramData[frame][inFramePeakBin];
-        }
-    }
-
-    return {frame:frame, bin:inFramePeakBin, value:inFramePeakValue, lastYMove:0};
-}
-
-function detectRidgeSlow(lastFrame, lastBin, binWindow, frameDirection, lastYMove, spectrogramData)
-{
-    const numFrames = spectrogramData.length;
-    const numBins = spectrogramData[0].length;
-
-    let frame = lastFrame;
-
-    let binWindowStart = Math.max((lastYMove>0)?lastBin+1:lastBin-binWindow, 0);
-    let binWindowStop  = Math.min((lastYMove<0)?lastBin-1:lastBin+binWindow, numBins-1);
-
-    let maxFrame = lastFrame;
-    let maxBin   = binWindowStart;
-    let maxValue = spectrogramData[maxFrame][maxBin];
-
-    for(let j=binWindowStart; j<=binWindowStop; j++) if(spectrogramData[lastFrame][j] > maxValue && j!=lastBin) {maxValue=spectrogramData[lastFrame][j]; maxBin=j;}
-
-    const nextFrame = lastFrame+frameDirection;
-    if(nextFrame >= numFrames || nextFrame < 0 ) return {frame:maxFrame, bin:maxBin, value:maxValue, lastYMove:(maxFrame==lastFrame)?maxBin-lastBin:0};
-    
-    binWindowStart = Math.max(lastBin-binWindow, 0);
-    binWindowStop  = Math.min(lastBin+binWindow, numBins-1);
-
-    for(let j=binWindowStart; j<=binWindowStop; j++) if(spectrogramData[lastFrame+frameDirection][j] > maxValue) {maxValue=spectrogramData[lastFrame+frameDirection][j]; maxFrame=lastFrame+frameDirection; maxBin=j;}
-
-    return {frame:maxFrame, bin:maxBin, value:maxValue, lastYMove:(maxFrame==lastFrame)?maxBin-lastBin:0};
-}
-
 function detectRidgeSubPixel(lastFrame, lastBin, binWindow, frameDirection, lastYMove, spectrogramData)
 {
     const numFrames = spectrogramData.length;
     const numBins = spectrogramData[0].length;
 
-    const center = (lastYMove == 0)?Math.PI/2:lastYMove;
-    const angleWindow = (lastYMove == 0)?Math.PI:Math.PI/2;
-    
-    const Npoints = 7;
-    const angleStep = angleWindow / (Npoints+1);
-
-    let maxFrame  = lastFrame;
-    let maxBin    = lastBin+frameDirection;
-    let maxValue  = bilinear(spectrogramData, lastFrame, lastBin+frameDirection); //spectrogramData[lastFrame][lastBin+frameDirection];
-    let lastMove  = Math.PI / 2;
-
-    for(let j=0; j<Npoints; j++)
+    if(lastYMove == 0)
     {
-        const angle = center + (j+1)*angleStep - angleWindow / 2;
+        const upRidge = detectRidgeSubPixel(lastFrame, lastBin, binWindow, frameDirection, Math.PI*3/2, spectrogramData);
+        const downRidge = detectRidgeSubPixel(lastFrame, lastBin, binWindow, frameDirection, Math.PI/2, spectrogramData);
 
-        if(angle <= 0 || angle >= Math.PI) continue;
-
-        let frame = lastFrame + Math.sin(angle)*frameDirection;
-        let bin   = lastBin   + Math.cos(angle)*binWindow;
-
-        const value = bilinear(spectrogramData, frame, bin);
-
-        if(value > maxValue) {maxValue=value; maxFrame=frame; maxBin=bin; lastMove=angle;}
+        if(upRidge.value > downRidge.value) return upRidge; else return downRidge;
     }
 
-    return {frame:maxFrame, bin:maxBin, value:maxValue, lastYMove:lastMove};
+    // Quick trend calculation from last move only (no array operations)
+    let center = lastYMove;
+    
+    // Fixed search window for performance (no adaptive sizing)
+    const angleWindow = Math.PI/2;
+    const Npoints = 7; // Reduced search points for speed
+    const angleStep = angleWindow / (Npoints + 1);
+
+    // Collect all candidates for weighted averaging
+    let totalWeight = 0;
+    let weightedAngleSum = 0;
+    
+    for(let j = 0; j < Npoints; j++)
+    {
+        const angle = center + (j+1)*angleStep - angleWindow / 2;
+        
+        let frame = lastFrame + Math.sin(angle) * frameDirection;
+        let bin   = lastBin   + Math.cos(angle) * binWindow;
+        
+        // Bounds checking
+        if (frame < 0 || frame >= numFrames || bin < 0 || bin >= numBins) continue;
+        
+        const value = bilinear(spectrogramData, frame, bin);
+        
+        // Weight value based on angle change from previous direction
+        const combinedWeight = value;
+        
+        // Accumulate weighted sums
+        totalWeight += combinedWeight;
+        weightedAngleSum += angle * combinedWeight;
+    }
+
+    const avgAngle = Math.max(Math.PI/100, Math.min(weightedAngleSum / totalWeight, Math.PI - Math.PI/100));
+    
+    // Calculate weighted averages
+    const avgFrame = lastFrame + Math.sin(avgAngle) * frameDirection;
+    const avgBin = lastBin + Math.cos(avgAngle) * binWindow;
+    const value = bilinear(spectrogramData, avgFrame, avgBin);
+    
+    return {
+        frame: avgFrame,
+        bin: avgBin,
+        value: value,
+        lastYMove: avgAngle
+    };
 }
 
 function getBox(peakStat, spectrogramData, lowBin, upperBin, magNoiseThreshold=0) {
-    //const detectRidge = detectRidgeSlow;
-    //const detectRidge = detectRidgeQuick;
     const detectRidge = detectRidgeSubPixel;
 
     let startFrame = peakStat.frame;
@@ -206,6 +168,7 @@ function getBox(peakStat, spectrogramData, lowBin, upperBin, magNoiseThreshold=0
         for(let maxPoints=numFrames; maxPoints>0; maxPoints--)
         {
             nextPoint = detectRidge(nextPoint.frame, nextPoint.bin, binWindow, direction, nextPoint.lastYMove, spectrogramData);
+            if(maxPoints==numFrames) firstPoint.lastYMove = Math.PI - nextPoint.lastYMove;
             value = Math.max(nextPoint.value, value);
             path.push({bin:nextPoint.bin, frame:nextPoint.frame, value:nextPoint.value});
             maxF = Math.max(maxF, nextPoint.bin);

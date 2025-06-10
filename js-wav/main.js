@@ -123,7 +123,6 @@ function showCurrentImage()
 
     if(peakTab.classList.contains('active'))
     {
-        console.log('ping 2');
         window.sharedImage = window.sharedPeakImage;
     }
     else
@@ -165,7 +164,10 @@ function showFile()
         updateMainImage();
         console.timeEnd('updateMainImage');
         
+        console.time('updatePeakOverlay');
         updatePeakOverlay();
+        console.timeEnd('updatePeakOverlay');
+
         showCurrentImage();
 
         audioElement.currentTime = signalWindow.start;
