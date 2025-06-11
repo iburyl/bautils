@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="BansheeLab.app - Professional bioacoustics analysis tools for bird and bat call recordings. Browser-based spectrogram analysis with advanced audio processing features.">
+    <meta name="description" content="BansheeLab.app - bioacoustics analysis tools for bird and bat call recordings. Browser-based spectrogram analysis with a relevant set of audio processing features.">
     <meta name="keywords" content="bioacoustics, spectrogram, audio analysis, bird calls, bat calls, sound analysis">
     <meta name="author" content="BansheeLab">
     
@@ -11,14 +11,14 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://bansheelab.app/">
     <meta property="og:title" content="BansheeLab.app - Bioacoustics Utilities">
-    <meta property="og:description" content="Professional bioacoustics analysis tools for bird and bat call recordings. Browser-based spectrogram analysis with advanced audio processing features.">
+    <meta property="og:description" content="Bioacoustics analysis tools for bird and bat call recordings. Browser-based spectrogram analysis with a relevant set of audio processing features.">
     <meta property="og:image" content="https://bansheelab.app/img/favicon.png">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://bansheelab.app/">
     <meta property="twitter:title" content="BansheeLab.app - Bioacoustics Utilities">
-    <meta property="twitter:description" content="Professional bioacoustics analysis tools for bird and bat call recordings.">
+    <meta property="twitter:description" content="Bioacoustics analysis tools for bird and bat call recordings.">
     <meta property="twitter:image" content="https://bansheelab.app/img/favicon.png">
     
     <title>BansheeLab.app - Bioacoustics Utilities</title>
@@ -228,6 +228,65 @@
             text-overflow: ellipsis;
         }
 
+        /* Peak Stats Table Styling */
+        div#peak_stats {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        
+        div#peak_stats table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+            font-size: 14px;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        div#peak_stats table th,
+        div#peak_stats table td {
+            padding: 8px 12px;
+            text-align: left;
+            border: 1px solid #e0e0e0;
+        }
+        
+        div#peak_stats table tr:first-child td,
+        div#peak_stats table tr.table-header td {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        div#peak_stats table tr.table-subtitle td {
+            background-color: #e9ecef;
+            font-weight: 600;
+            color: #495057;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        div#peak_stats table tr:nth-child(even):not(.table-subtitle):not(:first-child) {
+            background-color: #f8f9fa;
+        }
+        
+        div#peak_stats table tr:hover:not(.table-subtitle):not(:first-child) {
+            background-color: #e3f2fd;
+        }
+        
+        div#peak_stats table td:first-child {
+            font-weight: 500;
+            color: #495057;
+            text-align: left;
+        }
+        
+        div#peak_stats table td:not(:first-child) {
+            font-family: 'Courier New', monospace;
+            color: #212529;
+            text-align: right;
+        }
+
         /* ==========================================================================
            UI COMPONENTS
            ========================================================================== */
@@ -276,7 +335,7 @@
         <div class="input_list">
             <label for="wavFile" class="sr-only">Choose WAV audio file</label>
             <input type="file" id="wavFile" accept=".wav" aria-describedby="wavFile-help" />
-            <small id="wavFile-help">Select an audio file for analysis</small>
+            <small id="wavFile-help">Select a WAV audio file for analysis</small>
         </div>
 
         <div class="input_list">
@@ -437,7 +496,6 @@
     <script src="js-wav/analysis-peak-info.js"></script>
     <script src="js-wav/analysis-sequencies.js"></script>
     <script src="js-wav/draw-axis.js"></script>
-    <script src="js-wav/draw-favicon.js"></script>
     <script src="js-wav/draw-graph.js"></script>
     <script src="js-wav/draw-overlay-peaks.js"></script>
     <script src="js-wav/draw-selection.js"></script>

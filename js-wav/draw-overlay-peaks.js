@@ -1,11 +1,37 @@
 "use strict";
 
-function drawCircle(ctx, specCanvasWindow, point_x, point_y, color, radius = 6) {
+function drawCircle(ctx, specCanvasWindow, point, firstBin, framesPerPixel, binsPerPixel, color, label = null, radius = 6) {
+    // Calculate x and y coordinates from point data
+    const point_x = Math.floor((point.frame + 0.5) / framesPerPixel);
+    const point_y = Math.floor((point.bin - firstBin + 0.5) / binsPerPixel);
+    
+    // Draw the circle
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(specCanvasWindow.x + point_x, specCanvasWindow.y - point_y, radius, 0, 2 * Math.PI);
     ctx.stroke();
+    
+    // Draw label above the point if provided
+    if (label) {
+        ctx.fillStyle = color;
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        
+        // Position label above the circle
+        const labelX = specCanvasWindow.x + point_x;
+        const labelY = specCanvasWindow.y - point_y - radius - 5;
+        
+        // Draw label background for better visibility
+        const labelWidth = ctx.measureText(label).width;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(labelX - labelWidth/2 - 2, labelY - 12, labelWidth + 4, 14);
+        
+        // Draw the label text
+        ctx.fillStyle = color;
+        ctx.fillText(label, labelX, labelY);
+    }
 }
 
 function drawFoundPeaks(firstFrame, lastFrame, firstBin, lastBin, specCanvasWindow, foundPeaks, ctx, specData) {
@@ -68,19 +94,19 @@ function drawFoundPeaks(firstFrame, lastFrame, firstBin, lastBin, specCanvasWind
             if (!box.maxFreqPoint || !box.minFreqPoint || !box.maxMagPoint) getBoxStats(foundPeaks[i]);
 
             // Max frequency point
-            let point_x = Math.floor((box.maxFreqPoint.frame + 0.5) / framesPerPixel);
-            let point_y = Math.floor((box.maxFreqPoint.bin - firstBin + 0.5) / binsPerPixel);
-            drawCircle(ctx, specCanvasWindow, point_x, point_y, 'white');
+            drawCircle(ctx, specCanvasWindow, box.maxFreqPoint, firstBin, framesPerPixel, binsPerPixel, 'white', 'Fmax');
 
             // Min frequency point
-            point_x = Math.floor((box.minFreqPoint.frame + 0.5) / framesPerPixel);
-            point_y = Math.floor((box.minFreqPoint.bin - firstBin + 0.5) / binsPerPixel);
-            drawCircle(ctx, specCanvasWindow, point_x, point_y, 'white');
+            drawCircle(ctx, specCanvasWindow, box.minFreqPoint, firstBin, framesPerPixel, binsPerPixel, 'white', 'Fmin');
 
             // Max magnitude point
-            point_x = Math.floor((box.maxMagPoint.frame + 0.5) / framesPerPixel);
-            point_y = Math.floor((box.maxMagPoint.bin - firstBin + 0.5) / binsPerPixel);
-            drawCircle(ctx, specCanvasWindow, point_x, point_y, 'white');
+            drawCircle(ctx, specCanvasWindow, box.maxMagPoint, firstBin, framesPerPixel, binsPerPixel, 'white', 'FME');
+
+            // Characteristic frequency point
+            drawCircle(ctx, specCanvasWindow, box.characteristicFreqPoint, firstBin, framesPerPixel, binsPerPixel, 'white', 'Fc');
+
+            // Knee frequency point
+            drawCircle(ctx, specCanvasWindow, box.kneeFreqPoint, firstBin, framesPerPixel, binsPerPixel, 'white', 'Fknee');
         }
     }
 }

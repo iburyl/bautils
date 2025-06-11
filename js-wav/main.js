@@ -95,23 +95,51 @@ function updatePeakOverlay()
             getBoxStats(peakData);
 
             const binToKHz = 1 / numBins * signalWindow.sampleRate / 1000;
+            const framesPerSec = signalWindow.duration / numFrames;
+
+            const slopeCoeff = binToKHz / framesPerSec / 1000;
             
-            let framesPerSec = signalWindow.duration / numFrames;
+            function addPoint(name, point)
+            {
+                return tableLine(name, 
+                    (point.bin * binToKHz).toFixed(1) + ' kHz', 
+                    (signalWindow.start + point.frame * framesPerSec).toFixed(4) + ' s', 
+                    (point.slope * slopeCoeff).toFixed(3) + ' kHz/ms');
+            }
+            
             div.innerHTML =
                 '<table>' +
-                tableLine(name, ''  ) +
-                tableLine('Left mag. drop:',  (peakData.box.leftMagnitudeDrop).toFixed(1) + ' dB '  ) + 
-                tableLine('Right mag. drop:',  (peakData.box.rightMagnitudeDrop).toFixed(1) + ' dB '  ) + 
-                tableLine('Noise mag. from peak:',  (peakData.box.noiseThreshold).toFixed(1) + ' dB '  ) + 
-                tableLine('Time (start):',  (signalWindow.start + peakData.box.leftFrame * framesPerSec).toFixed(4) + ' s' ) + 
-                tableLine('Dur (duration):',  ((peakData.box.rightFrame - peakData.box.leftFrame) * framesPerSec).toFixed(4) + ' s  '  ) + 
-                tableLine('Start to peak mag.:',  ( (peakData.frame - peakData.box.leftFrame) / (peakData.box.rightFrame - peakData.box.leftFrame) ).toFixed(2)  ) + 
-                tableLine('Fmax (highest frequency):', (peakData.box.maxFreq * binToKHz).toFixed(1) + ' KHz  ' ) + 
-                tableLine('FME (frequency of most energy):', (peakData.bin * binToKHz).toFixed(1) + ' KHz  '  ) + 
-                tableLine('Fmean (mean frequency):', (peakData.box.meanFreq * binToKHz).toFixed(1) + ' KHz  '  ) + 
-                tableLine('Fmin (lowest frequency):', (peakData.box.minFreq * binToKHz).toFixed(1) + ' KHz  ' ) + 
+                //tableHeader(name, '', '', '') +
+                
+                tableSubtitle('Timing', 'Start', 'Stop', 'Duration') +
+                tableLine('',  
+                    (signalWindow.start + peakData.box.leftFrame * framesPerSec).toFixed(4) + ' s', 
+                    (signalWindow.start + peakData.box.rightFrame * framesPerSec).toFixed(4) + ' s', 
+                    ((peakData.box.rightFrame - peakData.box.leftFrame) * framesPerSec).toFixed(4) + ' s') + 
+
+                tableSubtitle('Key points', 'Frequency', 'Time', 'Slope') +
+                addPoint('Fc (characteristic frequency)', peakData.box.characteristicFreqPoint) + 
+                addPoint('FME (frequency of most energy)', peakData.box.maxMagPoint) + 
+                addPoint('Fmax (highest frequency)', peakData.box.maxFreqPoint) + 
+                addPoint('Fmin (lowest frequency)', peakData.box.minFreqPoint) + 
+                addPoint('Fknee (knee frequency)', peakData.box.kneeFreqPoint) + 
+
+                tableLine('Fmean (mean frequency)', (peakData.box.meanFreq * binToKHz).toFixed(1) + ' kHz', '', '') + 
+
+                tableSubtitle('Key slopes', 'Upper', 'Lower', 'Total') +  
+                tableLine('',  
+                    (peakData.box.upperSlope * slopeCoeff).toFixed(3) + ' kHz/ms', 
+                    (peakData.box.lowerSlope * slopeCoeff).toFixed(3) + ' kHz/ms', 
+                    (peakData.box.totalSlope * slopeCoeff).toFixed(3) + ' kHz/ms') +    
+
+                tableSubtitle('Magnitude vs. peak', 'Left', 'Right', 'Estimated noise') +
+                tableLine('',  
+                    (peakData.box.leftMagnitudeDrop).toFixed(1) + ' dB', 
+                    (peakData.box.rightMagnitudeDrop).toFixed(1) + ' dB', 
+                    (peakData.box.noiseThreshold).toFixed(1) + ' dB') + 
                 '</table>';
-        }
+
+            }
         
         addStats('Found peak', peakStatsDiv, peak, window.sharedSignalWindow, window.sharedData.timeData.data.length, window.sharedData.specData.data[0].length);
     }
