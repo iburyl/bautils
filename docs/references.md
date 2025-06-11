@@ -24,9 +24,43 @@ Page 50. Table 4-1.
 | Dur | Time from beginning of a call to its end |
 | TBC/IPI | Time between calls (also called interpulse interval) |
 
-## 
+## SonoBat
 
-**Source:** [Echolocation Call Characteristics of Western North American Bats](https://sonobat.com/download/Western_NA_Bat_Acoustic_Table.pdf)
+### Echolocation Call Characteristics of Western North American Bats
+
+**Source:** [sonobat.com](https://sonobat.com/download/Western_NA_Bat_Acoustic_Table.pdf)
+
+### Echolocation Call Characteristics of Eastern North American Bats
+
+**Source:** [sonobat.com](https://sonobat.com/download/Eastern_NA_Acoustic_Table.pdf)
+
+### Echolocation Call Characteristics. Glossary
+
+| Parameter | Description |
+|-----------|-------------|
+| approach phase | shorter, more closely spaced calls that bats transition into to pursue and evaluate a target after detecting it from echoes gleaned from search phase calls |
+| bandwidth | the total change in frequency through the call (kHz) |
+| body | the section of the call from the knee to the characteristic frequency (ƒc) |
+| dur | call duration (msec), from the beginning to the end of the call |
+| ƒc | characteristic frequency, i.e., the frequency of the call at its lowest slope toward the end of the call, or the lowest frequency for consistent FM sweeps (kHz) |
+| flat | a call or portion of a call with a very low slope or no slope (horizontal); low bandwidth |
+| FM | frequency modulation, i.e., a change in frequency with time |
+| ƒmaxE | the frequency (kHz) with the greatest amplitude (power, energy) |
+| lo ƒ | lowest apparent frequency (kHz); an unreliable call descriptor as the distance to the bat strongly influences the observed value |
+| harmonic | Higher frequency components of the same signal, appearing at integral multiples of the fundamental component (first harmonic) |
+| hi ƒ | highest apparent frequency (kHz); an unreliable call descriptor as the distance to the bat strongly influences the observed value |
+| inflection | a pronounced change in the slope of a call, sometimes called a “knee” |
+| knee | a break in the downward FM sweep of a call with a discernable change in slope between the initial part and lower section of the call (body) leading to the characteristic frequency (ƒc) |
+| lwr slp | lower slope, knee to ƒc slope (kHz/msec); the slope of the lower portion or body of the call from the knee to the ƒc (listed as KnToFcSlope on SonoBat output) |
+| power | the amplitude or sound energy of a call or portions of a call |
+| saturated | portion of a signal in which the amplitude of the signal exceeded the maximum recordable amplitude of the recording hardware, resulting in a flat-topped waveform; such a signal will not faithfully render the timeamplitude trend of a call, a useful feature for disambiguating some species |
+| search phase | the (mostly) regularly spaced calls of (mostly) regular duration that bats use in routine flight to detect and avoid obstacles and search for prey |
+| slp@ ƒc | slope at characteristic frequency, ƒc, (kHz) |
+| sqnc, sequence | “bat pass;” a temporal series of calls from a passing bat; begins with the bat entering the detection volume of the microphone and ends with the bat leaving the detection volume |
+| squiggle | an S-shaped variation in frequency (per time) over a portion of the call |
+| tail, aka toe | a downward turn in the call trend at the end of the call |
+| total slp | total slope (kHz/msec); overall change in frequency per change in msec (time) from the start of the call to the end of the call |
+| uppr slp | upper slope, hi ƒc to knee slope (kHz/msec); the slope of the upper portion or onset of the call from the highest frequency at the start of the downward sweep to the knee (listed as HiFtoKnSlope on SonoBat output) |
 
 ## Academic Papers
 
