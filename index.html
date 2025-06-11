@@ -360,8 +360,6 @@
         </div>
         </div>
 
-
-
         <!-- Tabs -->
         <div class="tabs-container">
             <div class="tabs" role="tablist" aria-label="Analysis tool tabs">
@@ -416,6 +414,16 @@
                         </div>
                         <div class="input_list">
                             <button id="zoom_peak">Zoom in peak</button>
+                        </div>
+                        <div class="input_list">
+                            <div>Species source<br /><select id="species_source_values">
+                              <option value=""></option>
+                              <option value="sonabat_western_na_bats">SonoBat: Echolocation Call Characteristics of Western North American Bats</option>
+                            </select></div>
+                        </div>
+                        <div class="input_list">
+                            <div>Species to compare to<br /><select id="species_values" list="species-values">
+                            </select></div>
                         </div>
                     </div>
                     <div class="tab-text">
@@ -504,6 +512,7 @@
     <script src="js-wav/main.js"></script>
     <script src="js-wav/refine.js"></script>
     <script src="js-wav/ui-buttons.js"></script>
+    <script src="js-wav/species-data.js"></script>
     <script src="js-wav/ui-inputs.js"></script>
     <script src="js-wav/ui-spectrogram.js"></script>
     <script src="js-wav/ui-tabs.js"></script>

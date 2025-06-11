@@ -96,41 +96,154 @@ function updatePeakOverlay()
 
             const binToKHz = 1 / numBins * signalWindow.sampleRate / 1000;
             const framesPerSec = signalWindow.duration / numFrames;
+            const framesPerMillisec = signalWindow.duration / numFrames * 1000;
 
             const slopeCoeff = binToKHz / framesPerSec / 1000;
             
-            function addPoint(name, point)
+            // Get selected species data for comparison
+            function getSelectedSpeciesData() {
+                const speciesSourceSelect = document.getElementById('species_source_values');
+                const speciesListSelect = document.getElementById('species_values');
+                
+                if (!speciesSourceSelect || !speciesListSelect || 
+                    !speciesSourceSelect.value || !speciesListSelect.value) {
+                    return null;
+                }
+                
+                const sourceKey = speciesSourceSelect.value;
+                const speciesCode = speciesListSelect.value;
+                
+                if (window.speciesData && window.speciesData[sourceKey] && 
+                    window.speciesData[sourceKey].species) {
+                    
+                    return window.speciesData[sourceKey].species.find(
+                        species => (species.code === speciesCode || species.species === speciesCode)
+                    );
+                }
+                
+                return null;
+            }
+            
+            const selectedSpecies = getSelectedSpeciesData();
+            
+            function getBar(value, compare, unit = '')
             {
+                if (!compare || !compare.range || compare.range.length < 2) {
+                    return '';
+                }
+                
+                let min = Math.min(compare.range[0], value);
+                const max = Math.max(compare.range[1], value);
+                const diff = (max - min)*1.2;
+                min -= (max - min)*0.1;
+                
+                if (diff === 0) return '';
+
+                const range_x = [Math.round((compare.range[0] - min)/diff*120), Math.round((compare.range[1] - min)/diff*120)];
+                const stddev_x = [Math.round((compare.mean - compare.stddev - min)/diff*120), Math.round((compare.mean + compare.stddev - min)/diff*120)];
+                const value_x = Math.round((value - min)/diff*120)-1;
+
+                let tooltipText = `Observed: ${value.toFixed(2)}${unit}\n`;
+                tooltipText += `Reference Species:\n`;
+                tooltipText += `Mean: ${compare.mean.toFixed(2)}${unit}\n`;
+                tooltipText += `StdDev Range: ${(compare.mean-compare.stddev).toFixed(2)} - ${(compare.mean+compare.stddev).toFixed(2)}${unit}\n`;
+                tooltipText += `Full Range: ${compare.range[0].toFixed(2)} - ${compare.range[1].toFixed(2)}${unit}`;
+
+                return '<svg width="120" height="10">' +
+                      '<title>' + tooltipText + '</title>' +
+                      '<rect x="0" y="0" width="120" height="10" fill="#f96" /> ' + // background
+                      '<rect x="'+range_x[0]+'" y="0" width="'+(range_x[1]-range_x[0])+'" height="10" fill="#ff9" /> ' + // Full range
+                      '<rect x="'+stddev_x[0]+'" y="0" width="'+(stddev_x[1]-stddev_x[0])+'" height="10" fill="#9f6" /> ' + // Mean ± SD
+                      '<rect x="'+value_x+'" y="0" width="2" height="10" fill="#f00" /> '  + // Current observation
+                    '</svg>';
+            }
+            
+            function createCompareData(mean, stddev, range) {
+                if (typeof mean !== 'number' || !Array.isArray(stddev) || !Array.isArray(range)) {
+                    return null;
+                }
+                return {
+                    mean: mean,
+                    stddev: Math.abs(stddev[0] - stddev[1]) / 2, // Convert [high, low] to stddev
+                    range: range
+                };
+            }
+            
+            function addPoint(name, point, freqCompare = null, slopeCompare = null)
+            {
+                const freq = point.bin * binToKHz;
+                const slope = point.slope * slopeCoeff;
+                const freq_bar = freqCompare ? '<br />'+getBar(freq, freqCompare, ' kHz') : '';
+                const slope_bar = slopeCompare ? '<br />'+getBar(Math.abs(slope), slopeCompare, ' kHz/ms') : '';
+
                 return tableLine(name, 
-                    (point.bin * binToKHz).toFixed(1) + ' kHz', 
+                    freq.toFixed(1) + ' kHz' + freq_bar, 
                     (signalWindow.start + point.frame * framesPerSec).toFixed(4) + ' s', 
-                    (point.slope * slopeCoeff).toFixed(3) + ' kHz/ms');
+                    slope.toFixed(3) + ' kHz/ms' + slope_bar);
+            }
+            
+            // Create comparison data objects if species is selected
+            let durCompare = null, fcCompare = null, fmeCompare = null, fmaxCompare = null, fminCompare = null;
+            let upperSlopeCompare = null, lowerSlopeCompare = null, totalSlopeCompare = null, fcSlopeCompare = null;
+            
+            if (selectedSpecies) {
+                // Duration comparisons
+                if (selectedSpecies.dur_mean !== undefined) {
+                    durCompare = createCompareData(selectedSpecies.dur_mean, selectedSpecies.dur_stddev, selectedSpecies.dur_range);
+                }
+
+                // Frequency comparisons
+                if (selectedSpecies.fc_mean !== undefined) {
+                    fcCompare = createCompareData(selectedSpecies.fc_mean, selectedSpecies.fc_stddev, selectedSpecies.fc_range);
+                }
+                if (selectedSpecies.fmaxE_mean !== undefined) {
+                    fmeCompare = createCompareData(selectedSpecies.fmaxE_mean, selectedSpecies.fmaxE_stddev, selectedSpecies.fmaxE_range);
+                }
+                if (selectedSpecies.fhi_mean !== undefined) {
+                    fmaxCompare = createCompareData(selectedSpecies.fhi_mean, selectedSpecies.fhi_stddev, selectedSpecies.fhi_range);
+                }
+                if (selectedSpecies.flo_mean !== undefined) {
+                    fminCompare = createCompareData(selectedSpecies.flo_mean, selectedSpecies.flo_stddev, selectedSpecies.flo_range);
+                }
+                
+                // Slope comparisons (convert from kHz/ms to match our units)
+                if (selectedSpecies.uppr_slope !== undefined) {
+                    upperSlopeCompare = createCompareData(selectedSpecies.uppr_slope, selectedSpecies.uppr_slope_stddev, selectedSpecies.uppr_slope_range);
+                }
+                if (selectedSpecies.lwr_slope !== undefined) {
+                    lowerSlopeCompare = createCompareData(selectedSpecies.lwr_slope, selectedSpecies.lwr_slope_stddev, selectedSpecies.lwr_slope_range);
+                }
+                if (selectedSpecies.domnt_slope !== undefined) {
+                    totalSlopeCompare = createCompareData(selectedSpecies.domnt_slope, selectedSpecies.domnt_slope_stddev, selectedSpecies.domnt_slope_range);
+                }
+                if(selectedSpecies.slope_fc !== undefined) {
+                    fcSlopeCompare = createCompareData(selectedSpecies.slope_fc, selectedSpecies.slope_fc_stddev, selectedSpecies.slope_fc_range);
+                }
             }
             
             div.innerHTML =
                 '<table>' +
-                //tableHeader(name, '', '', '') +
                 
                 tableSubtitle('Timing', 'Start', 'Stop', 'Duration') +
                 tableLine('',  
                     (signalWindow.start + peakData.box.leftFrame * framesPerSec).toFixed(4) + ' s', 
                     (signalWindow.start + peakData.box.rightFrame * framesPerSec).toFixed(4) + ' s', 
-                    ((peakData.box.rightFrame - peakData.box.leftFrame) * framesPerSec).toFixed(4) + ' s') + 
+                    ((peakData.box.rightFrame - peakData.box.leftFrame) * framesPerMillisec).toFixed(1) + ' ms' + (durCompare ? '<br />'+getBar(Math.abs(peakData.box.rightFrame - peakData.box.leftFrame) * framesPerMillisec, durCompare, ' ms') : '')) + 
 
                 tableSubtitle('Key points', 'Frequency', 'Time', 'Slope') +
-                addPoint('Fc (characteristic frequency)', peakData.box.characteristicFreqPoint) + 
-                addPoint('FME (frequency of most energy)', peakData.box.maxMagPoint) + 
-                addPoint('Fmax (highest frequency)', peakData.box.maxFreqPoint) + 
-                addPoint('Fmin (lowest frequency)', peakData.box.minFreqPoint) + 
+                addPoint('Fc (characteristic frequency)', peakData.box.characteristicFreqPoint, fcCompare, fcSlopeCompare) + 
+                addPoint('FME (frequency of most energy)', peakData.box.maxMagPoint, fmeCompare) + 
+                addPoint('Fmax (highest frequency)', peakData.box.maxFreqPoint, fmaxCompare) + 
+                addPoint('Fmin (lowest frequency)', peakData.box.minFreqPoint, fminCompare) + 
                 addPoint('Fknee (knee frequency)', peakData.box.kneeFreqPoint) + 
 
                 tableLine('Fmean (mean frequency)', (peakData.box.meanFreq * binToKHz).toFixed(1) + ' kHz', '', '') + 
 
                 tableSubtitle('Key slopes', 'Upper', 'Lower', 'Total') +  
                 tableLine('',  
-                    (peakData.box.upperSlope * slopeCoeff).toFixed(3) + ' kHz/ms', 
-                    (peakData.box.lowerSlope * slopeCoeff).toFixed(3) + ' kHz/ms', 
-                    (peakData.box.totalSlope * slopeCoeff).toFixed(3) + ' kHz/ms') +    
+                    (peakData.box.upperSlope * slopeCoeff).toFixed(3) + ' kHz/ms' + (upperSlopeCompare ? '<br />'+getBar(Math.abs(peakData.box.upperSlope * slopeCoeff), upperSlopeCompare, ' kHz/ms') : ''), 
+                    (peakData.box.lowerSlope * slopeCoeff).toFixed(3) + ' kHz/ms' + (lowerSlopeCompare ? '<br />'+getBar(Math.abs(peakData.box.lowerSlope * slopeCoeff), lowerSlopeCompare, ' kHz/ms') : ''), 
+                    (peakData.box.totalSlope * slopeCoeff).toFixed(3) + ' kHz/ms' + (totalSlopeCompare ? '<br />'+getBar(Math.abs(peakData.box.totalSlope * slopeCoeff), totalSlopeCompare, ' kHz/ms') : '')) +    
 
                 tableSubtitle('Magnitude vs. peak', 'Left', 'Right', 'Estimated noise') +
                 tableLine('',  

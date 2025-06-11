@@ -187,6 +187,34 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePeakOverlay();
         showCurrentImage();
     });
+
+    params.peak.speciesList = initParam('species_values', '', [], (el) => {
+        updatePeakOverlay();
+        showCurrentImage();
+    });
+
+        params.peak.speciesSource = initParam('species_source_values', '', [], (el) => {
+        params.peak.speciesList.value = '';
+        
+        // Clear existing options
+        const speciesListSelect = document.getElementById('species_values');
+        speciesListSelect.innerHTML = '<option value=""></option>';
+        
+        if (el.value !== '' && window.speciesData && window.speciesData[el.value]) {
+            const speciesDataSet = window.speciesData[el.value];
+            
+            // Populate with species from the embedded data
+            if (speciesDataSet.species && Array.isArray(speciesDataSet.species)) {
+                speciesDataSet.species.forEach(species => {
+                    const option = document.createElement('option');
+                    option.value = species.code || species.species;
+                    option.textContent = `${species.common_name} (${species.code || species.species})`;
+                    speciesListSelect.appendChild(option);
+                });
+            }
+        }
+    });
+
     
     fileInput.addEventListener('change', async function() {
         const file = fileInput.files[0];
