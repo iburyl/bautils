@@ -108,6 +108,10 @@
             padding: 2px;
             font: inherit;
         }
+
+        .wide_input {
+            width: 700px;
+        }
         
         /* ==========================================================================
            BUTTONS
@@ -416,13 +420,13 @@
                             <button id="zoom_peak">Zoom in peak</button>
                         </div>
                         <div class="input_list">
-                            <div>Species source<br /><select id="species_source_values">
+                            <div>Source of reference data<br /><select id="species_source_values" class="wide_input">
                               <option value=""></option>
                               <option value="sonabat_western_na_bats">SonoBat: Echolocation Call Characteristics of Western North American Bats</option>
                             </select></div>
                         </div>
                         <div class="input_list">
-                            <div>Species to compare to<br /><select id="species_values" list="species-values">
+                            <div>Species to compare to<br /><select id="species_values" list="species-values" class="wide_input">
                             </select></div>
                         </div>
                     </div>
