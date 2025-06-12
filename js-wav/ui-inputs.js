@@ -89,6 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('wavFile');
     const mainCanvas = document.getElementById('mainCanvas');
 
+    // Add state for tracking multiple files
+    window.sharedFiles = [];
+    window.currentFileIndex = -1;
+
     // Main Tab
     params.main.start  = initParam('start', 0, ['new-audio'], (el) =>
     {
@@ -217,11 +221,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     
     fileInput.addEventListener('change', async function() {
-        const file = fileInput.files[0];
-        if (!file) {
+        const files = Array.from(fileInput.files);
+        if (files.length === 0) {
             return;
         }
 
+        window.sharedFiles = files;
+        window.currentFileIndex = 0;
+        await loadCurrentFile();
+    });
+
+    // Add navigation functions
+    window.loadCurrentFile = async function() {
+        if (window.currentFileIndex < 0 || window.currentFileIndex >= window.sharedFiles.length) {
+            document.getElementById('wavFile-help').textContent = 'Select WAV audio files for analysis';
+            return;
+        }
+
+        const file = window.sharedFiles[window.currentFileIndex];
+        document.getElementById('wavFile-help').textContent = file.name;
+        
         ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
 
         const audioURL = URL.createObjectURL(file);
@@ -231,7 +250,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         await loadFile();
         showFile();
-    });
+    };
+
+    window.navigateToFile = function(direction) {
+        if (window.sharedFiles.length === 0) return;
+        
+        window.currentFileIndex = (window.currentFileIndex + direction + window.sharedFiles.length) % window.sharedFiles.length;
+        window.loadCurrentFile();
+    };
 
     // Select Tab
     params.selection.start  = initParam('selection_start', '', ['new-audio']);

@@ -338,8 +338,10 @@
     <div class="container">
         <div class="input_list">
             <label for="wavFile" class="sr-only">Choose WAV audio file</label>
-            <input type="file" id="wavFile" accept=".wav" aria-describedby="wavFile-help" />
-            <small id="wavFile-help">Select a WAV audio file for analysis</small>
+            <input type="file" id="wavFile" accept=".wav" multiple aria-describedby="wavFile-help" />
+            <button id="prevFile" aria-label="Previous file">&#x25C0;</button>
+            <button id="nextFile" aria-label="Next file">&#x25B6;</button>
+            <small id="wavFile-help">Select WAV audio files for analysis</small>
         </div>
 
         <div class="input_list">

@@ -4,6 +4,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const paramStart= document.getElementById('start');
     const paramStop= document.getElementById('stop');
 
+    // Add file navigation button handlers
+    document.getElementById('prevFile').addEventListener('click', function() {
+        window.navigateToFile(-1);
+    });
+
+    document.getElementById('nextFile').addEventListener('click', function() {
+        window.navigateToFile(1);
+    });
+
     document.getElementById('updateButton').addEventListener('click', async () => {
         showFile();
     });
