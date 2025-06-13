@@ -70,6 +70,86 @@ function updateMainImage()
     }
 }
 
+function chiSquareTest(observed, expected, stddev) {
+    // Calculate chi-square statistic
+    let chiSquare = 0;
+    for (let i = 0; i < observed.length; i++) {
+        const stddev_i = (stddev[i][1] - stddev[i][0])/2;
+        const normalizedDiff = Math.pow((observed[i] - expected[i]) / stddev_i, 2);
+        chiSquare += normalizedDiff;
+    }
+    return chiSquare;
+}
+
+function calculateSpeciesMatch(peakData, species, binToKHz, framesPerMillisec, slopeCoeff) {
+    console.log(peakData, species, binToKHz, framesPerMillisec, slopeCoeff);
+    // Check if peakData and its required properties exist
+    if (!peakData || !peakData.box || 
+        !peakData.box.characteristicFreqPoint || !peakData.box.maxMagPoint || 
+        !peakData.box.maxFreqPoint || !peakData.box.minFreqPoint) {
+        return null;
+    }
+
+    // Collect observed values
+    const observed = [
+        (peakData.box.rightFrame - peakData.box.leftFrame) * framesPerMillisec, // Duration
+        peakData.box.characteristicFreqPoint.bin * binToKHz, // Fc
+        peakData.box.maxMagPoint.bin * binToKHz, // FME
+        peakData.box.maxFreqPoint.bin * binToKHz, // Fmax
+        peakData.box.minFreqPoint.bin * binToKHz, // Fmin
+        Math.abs(peakData.box.upperSlope * slopeCoeff), // Upper slope
+        Math.abs(peakData.box.lowerSlope * slopeCoeff), // Lower slope
+        Math.abs(peakData.box.totalSlope * slopeCoeff)  // Total slope
+    ];
+
+    // Collect expected values and standard deviations
+    const expected = [
+        species.dur_mean,
+        species.fc_mean,
+        species.fmaxE_mean,
+        species.fhi_mean,
+        species.flo_mean,
+        species.uppr_slope,
+        species.lwr_slope,
+        species.domnt_slope
+    ];
+
+    const stddev = [
+        species.dur_stddev,
+        species.fc_stddev,
+        species.fmaxE_stddev,
+        species.fhi_stddev,
+        species.flo_stddev,
+        species.uppr_slope_stddev,
+        species.lwr_slope_stddev,
+        species.domnt_slope_stddev
+    ];
+
+    // Filter out undefined values
+    const validIndices = observed.map((_, i) => 
+        expected[i] !== undefined && stddev[i] !== undefined ? i : -1
+    ).filter(i => i !== -1);
+
+    const validObserved = validIndices.map(i => observed[i]);
+    const validExpected = validIndices.map(i => expected[i]);
+    const validStddev = validIndices.map(i => stddev[i]);
+
+    if (validObserved.length === 0) {
+        return null;
+    }
+
+    const chiSquare = chiSquareTest(validObserved, validExpected, validStddev);
+    const degreesOfFreedom = validObserved.length - 1;
+    const pValue = Math.exp(-chiSquare / 2) * Math.pow(chiSquare, degreesOfFreedom / 2 - 1);
+
+    return {
+        species: species,
+        chiSquare: chiSquare,
+        pValue: pValue,
+        degreesOfFreedom: degreesOfFreedom
+    };
+}
+
 function updatePeakOverlay()
 {
     const peakStatsDiv = document.getElementById('peak_stats');
@@ -92,8 +172,6 @@ function updatePeakOverlay()
 
         function addStats(name, div, peakData, signalWindow, numFrames, numBins)
         {
-            getBoxStats(peakData);
-
             const binToKHz = 1 / numBins * signalWindow.sampleRate / 1000;
             const framesPerSec = signalWindow.duration / numFrames;
             const framesPerMillisec = signalWindow.duration / numFrames * 1000;
@@ -125,6 +203,17 @@ function updatePeakOverlay()
             }
             
             const selectedSpecies = getSelectedSpeciesData();
+            
+            // Calculate chi-square for selected species
+            let chiSquareResult = '';
+            if (selectedSpecies) {
+                const match = calculateSpeciesMatch(peakData, selectedSpecies, binToKHz, framesPerMillisec, slopeCoeff);
+                if (match) {
+                    chiSquareResult = 
+                        tableSubtitle('Chi-Square Test', 'χ²', 'p-value', '') + 
+                        tableLine('', match.chiSquare.toFixed(2), match.pValue.toFixed(4), '');
+                }
+            }
             
             function getBar(value, compare, unit = '')
             {
@@ -250,6 +339,7 @@ function updatePeakOverlay()
                     (peakData.box.leftMagnitudeDrop).toFixed(1) + ' dB', 
                     (peakData.box.rightMagnitudeDrop).toFixed(1) + ' dB', 
                     (peakData.box.noiseThreshold).toFixed(1) + ' dB') + 
+                chiSquareResult + // Add chi-square test results
                 '</table>';
 
             }

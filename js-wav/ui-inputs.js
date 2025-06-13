@@ -197,7 +197,9 @@ document.addEventListener('DOMContentLoaded', () => {
         showCurrentImage();
     });
 
-        params.peak.speciesSource = initParam('species_source_values', '', [], (el) => {
+    params.peak.speciesSource = initParam('species_source_values', '', ['params-update'], (el) => {
+        const oldSpeciesValue = params.peak.speciesList.value;
+        let hasSameValue = false;
         params.peak.speciesList.value = '';
         
         // Clear existing options
@@ -207,15 +209,43 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el.value !== '' && window.speciesData && window.speciesData[el.value]) {
             const speciesDataSet = window.speciesData[el.value];
             
+            // Get current peak data if available
+            let matches = [];
+            if (window.sharedData && window.sharedSignalWindow) {
+                const peakData = calculatePeak(window.sharedSignalWindow.sampleRate, 
+                    window.sharedData.specData.data, window.sharedData.freqData.data);
+                
+                if (peakData) {
+                    const binToKHz = 1 / window.sharedData.specData.data[0].length * window.sharedSignalWindow.sampleRate / 1000;
+                    const framesPerMillisec = window.sharedSignalWindow.duration / window.sharedData.timeData.data.length * 1000;
+                    const framesPerSec = window.sharedSignalWindow.duration / window.sharedData.timeData.data.length;
+                    const slopeCoeff = binToKHz / framesPerSec / 1000;
+
+                    // Calculate matches for all species
+                    matches = speciesDataSet.species
+                        .map(species => calculateSpeciesMatch(peakData, species, binToKHz, framesPerMillisec, slopeCoeff))
+                        .filter(match => match !== null)
+                        .sort((a, b) => a.chiSquare - b.chiSquare);
+                }
+            }
+            
             // Populate with species from the embedded data
             if (speciesDataSet.species && Array.isArray(speciesDataSet.species)) {
-                speciesDataSet.species.forEach(species => {
+                const speciesToAdd = matches.length > 0 ? 
+                    matches.map(match => match.species) : 
+                    speciesDataSet.species;
+
+                speciesToAdd.forEach(species => {
                     const option = document.createElement('option');
                     option.value = species.code || species.species;
                     option.textContent = `${species.common_name} (${species.code || species.species})`;
                     speciesListSelect.appendChild(option);
+
+                    if(species.code || species.species == oldSpeciesValue) hasSameValue = true;
                 });
             }
+
+            if(!hasSameValue) params.peak.speciesList.value = oldSpeciesValue;
         }
     });
 

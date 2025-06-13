@@ -29,6 +29,7 @@ function calculatePeak(sampleRate, spectrogramData, peakFreq)
     const magNoiseThreshold = sortedFreq[ Math.round(0.1 * (sortedFreq.length - 1)) ] * 10;
 
     searchFreqPeak.box = getBox(searchFreqPeak, spectrogramData, searchFirstBin, searchLastBin, magNoiseThreshold);
+    getBoxStats(searchFreqPeak);
 
     return searchFreqPeak;
 }
