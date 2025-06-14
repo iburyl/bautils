@@ -249,7 +249,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    
+    // Populate params.peak.speciesSource with the list of possible sources
+    const speciesSourceSelect = document.getElementById('species_source_values');
+    if (speciesSourceSelect && window.speciesData) {
+        // Clear existing options except the empty one
+        speciesSourceSelect.innerHTML = '<option value=""></option>';
+        
+        // Add options for each source in window.speciesData
+        Object.entries(window.speciesData).forEach(([key, data]) => {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = data.source_name;
+            speciesSourceSelect.appendChild(option);
+        });
+    }
+
     fileInput.addEventListener('change', async function() {
         const files = Array.from(fileInput.files);
         if (files.length === 0) {

@@ -74,15 +74,24 @@ function chiSquareTest(observed, expected, stddev) {
     // Calculate chi-square statistic
     let chiSquare = 0;
     for (let i = 0; i < observed.length; i++) {
-        const stddev_i = (stddev[i][1] - stddev[i][0])/2;
-        const normalizedDiff = Math.pow((observed[i] - expected[i]) / stddev_i, 2);
+        const normalizedDiff = Math.pow((observed[i] - expected[i]) / stddev[i], 2);
         chiSquare += normalizedDiff;
     }
     return chiSquare;
 }
 
+function processCharacteristic(char) {
+    if (!char || !Array.isArray(char.stddev)) {
+        return null;
+    }
+    return {
+        mean: char.mean !== undefined ? char.mean : (char.stddev[0] + char.stddev[1]) / 2,
+        stddev: Math.abs(char.stddev[0] - char.stddev[1]) / 2,
+        range: Array.isArray(char.range) ? char.range : char.stddev
+    };
+}
+
 function calculateSpeciesMatch(peakData, species, binToKHz, framesPerMillisec, slopeCoeff) {
-    console.log(peakData, species, binToKHz, framesPerMillisec, slopeCoeff);
     // Check if peakData and its required properties exist
     if (!peakData || !peakData.box || 
         !peakData.box.characteristicFreqPoint || !peakData.box.maxMagPoint || 
@@ -102,38 +111,26 @@ function calculateSpeciesMatch(peakData, species, binToKHz, framesPerMillisec, s
         Math.abs(peakData.box.totalSlope * slopeCoeff)  // Total slope
     ];
 
-    // Collect expected values and standard deviations
-    const expected = [
-        species.dur_mean,
-        species.fc_mean,
-        species.fmaxE_mean,
-        species.fhi_mean,
-        species.flo_mean,
+    // Get characteristics using shared processing logic
+    const characteristics = [
+        species.dur,
+        species.fc,
+        species.fmaxE,
+        species.fhi,
+        species.flo,
         species.uppr_slope,
         species.lwr_slope,
         species.domnt_slope
-    ];
-
-    const stddev = [
-        species.dur_stddev,
-        species.fc_stddev,
-        species.fmaxE_stddev,
-        species.fhi_stddev,
-        species.flo_stddev,
-        species.uppr_slope_stddev,
-        species.lwr_slope_stddev,
-        species.domnt_slope_stddev
-    ];
+    ].map(processCharacteristic);
 
     // Filter out undefined values
-    const validIndices = observed.map((_, i) => 
-        expected[i] !== undefined && stddev[i] !== undefined ? i : -1
-    ).filter(i => i !== -1);
-
+    const validIndices = characteristics.map((char, i) => char !== null ? i : -1).filter(i => i !== -1);
     const validObserved = validIndices.map(i => observed[i]);
-    const validExpected = validIndices.map(i => expected[i]);
-    const validStddev = validIndices.map(i => stddev[i]);
+    const validExpected = validIndices.map(i => characteristics[i].mean);
+    const validStddev = validIndices.map(i => characteristics[i].stddev);
 
+    console.log(validObserved, validExpected, validStddev);
+    
     if (validObserved.length === 0) {
         return null;
     }
@@ -141,6 +138,8 @@ function calculateSpeciesMatch(peakData, species, binToKHz, framesPerMillisec, s
     const chiSquare = chiSquareTest(validObserved, validExpected, validStddev);
     const degreesOfFreedom = validObserved.length - 1;
     const pValue = Math.exp(-chiSquare / 2) * Math.pow(chiSquare, degreesOfFreedom / 2 - 1);
+
+    console.log(chiSquare, degreesOfFreedom, pValue);
 
     return {
         species: species,
@@ -247,17 +246,6 @@ function updatePeakOverlay()
                     '</svg>';
             }
             
-            function createCompareData(mean, stddev, range) {
-                if (typeof mean !== 'number' || !Array.isArray(stddev) || !Array.isArray(range)) {
-                    return null;
-                }
-                return {
-                    mean: mean,
-                    stddev: Math.abs(stddev[0] - stddev[1]) / 2, // Convert [high, low] to stddev
-                    range: range
-                };
-            }
-            
             function addPoint(name, point, freqCompare = null, slopeCompare = null)
             {
                 const freq = point.bin * binToKHz;
@@ -277,36 +265,36 @@ function updatePeakOverlay()
             
             if (selectedSpecies) {
                 // Duration comparisons
-                if (selectedSpecies.dur_mean !== undefined) {
-                    durCompare = createCompareData(selectedSpecies.dur_mean, selectedSpecies.dur_stddev, selectedSpecies.dur_range);
+                if (selectedSpecies.dur) {
+                    durCompare = processCharacteristic(selectedSpecies.dur);
                 }
 
                 // Frequency comparisons
-                if (selectedSpecies.fc_mean !== undefined) {
-                    fcCompare = createCompareData(selectedSpecies.fc_mean, selectedSpecies.fc_stddev, selectedSpecies.fc_range);
+                if (selectedSpecies.fc) {
+                    fcCompare = processCharacteristic(selectedSpecies.fc);
                 }
-                if (selectedSpecies.fmaxE_mean !== undefined) {
-                    fmeCompare = createCompareData(selectedSpecies.fmaxE_mean, selectedSpecies.fmaxE_stddev, selectedSpecies.fmaxE_range);
+                if (selectedSpecies.fmaxE) {
+                    fmeCompare = processCharacteristic(selectedSpecies.fmaxE);
                 }
-                if (selectedSpecies.fhi_mean !== undefined) {
-                    fmaxCompare = createCompareData(selectedSpecies.fhi_mean, selectedSpecies.fhi_stddev, selectedSpecies.fhi_range);
+                if (selectedSpecies.fhi) {
+                    fmaxCompare = processCharacteristic(selectedSpecies.fhi);
                 }
-                if (selectedSpecies.flo_mean !== undefined) {
-                    fminCompare = createCompareData(selectedSpecies.flo_mean, selectedSpecies.flo_stddev, selectedSpecies.flo_range);
+                if (selectedSpecies.flo) {
+                    fminCompare = processCharacteristic(selectedSpecies.flo);
                 }
                 
                 // Slope comparisons (convert from kHz/ms to match our units)
-                if (selectedSpecies.uppr_slope !== undefined) {
-                    upperSlopeCompare = createCompareData(selectedSpecies.uppr_slope, selectedSpecies.uppr_slope_stddev, selectedSpecies.uppr_slope_range);
+                if (selectedSpecies.uppr_slope) {
+                    upperSlopeCompare = processCharacteristic(selectedSpecies.uppr_slope);
                 }
-                if (selectedSpecies.lwr_slope !== undefined) {
-                    lowerSlopeCompare = createCompareData(selectedSpecies.lwr_slope, selectedSpecies.lwr_slope_stddev, selectedSpecies.lwr_slope_range);
+                if (selectedSpecies.lwr_slope) {
+                    lowerSlopeCompare = processCharacteristic(selectedSpecies.lwr_slope);
                 }
-                if (selectedSpecies.domnt_slope !== undefined) {
-                    totalSlopeCompare = createCompareData(selectedSpecies.domnt_slope, selectedSpecies.domnt_slope_stddev, selectedSpecies.domnt_slope_range);
+                if (selectedSpecies.domnt_slope) {
+                    totalSlopeCompare = processCharacteristic(selectedSpecies.domnt_slope);
                 }
-                if(selectedSpecies.slope_fc !== undefined) {
-                    fcSlopeCompare = createCompareData(selectedSpecies.slope_fc, selectedSpecies.slope_fc_stddev, selectedSpecies.slope_fc_range);
+                if (selectedSpecies.slope_fc) {
+                    fcSlopeCompare = processCharacteristic(selectedSpecies.slope_fc);
                 }
             }
             
