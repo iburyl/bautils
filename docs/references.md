@@ -2,8 +2,10 @@
 
 ## Bat Echolocation Research Handbook
 
-**Title:** Bat Echolocation Research: A handbook for planning and conducting acoustic studies  
-**Edition:** Second Edition  
+**Title:** Bat Echolocation Research: A handbook for planning and conducting acoustic studies
+
+**Edition:** Second Edition
+
 **Source:** [Bat Conservation International](https://www.batcon.org/wp-content/uploads/2020/09/Bat_Echolocation_Research_2nd_Ed_20200918.pdf)
 
 ### Common Call Parameters
@@ -83,6 +85,23 @@ Page 50. Table 4-1.
 **Source (en):** [batability.co.uk](https://batability.co.uk/wp-content/uploads/2020/08/Analysis-of-Batcalls-1.pdf)
 
 **Source (ge):** [researchgate.net](https://www.researchgate.net/publication/343166284_Bayerisches_Landesamt_fur_Umwelt_Fledermausschutz_in_Bayern_Bestimmung_von_Fledermausrufaufnahmen_und_Kriterien_fur_die_Wertung_von_akustischen_Artnachweisen_Teil_1)
+
+#### Notes. 
+
+Page 15 in Einglish translation:
+
+>The term slope means the amount of the slope (regardless of whether the call increases or
+decreases). To calculate the slope, the spectral bandwidth (frequency range: highest minus lowest
+frequency) is divided by the duration of the relevant call segment, or the entire call.
+- cf section: slope < 0.1 kHz/ms
+- qcf section: slope >= 0.1 and < 1 kHz/ms
+- FM section: slope >= 1 kHz/ms
+- cf call: average slope of the call < 0.1 kHz / ms
+- qcf call: average slope of the entire call is >= 0.1 and <1 kHz/ms
+- fm-qcf call: the call contains fm and qcf sections, each of which is at least 1 ms long. The
+average slope of the entire call must be >= 1 kHz, otherwise it is still a qcf call
+- fm call: the call does not contain any sections over 1 ms in length, the slope of which is < 1
+kHz/ms
 
 ### Mac Aodha, O., et al. (2018)
 **Title:** Bat detective-Deep learning tools for bat acoustic signal detection
