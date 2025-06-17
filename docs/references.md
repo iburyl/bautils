@@ -88,7 +88,7 @@ Page 50. Table 4-1.
 
 #### Notes. 
 
-Page 15 in Einglish translation:
+Page 15 in English translation:
 
 > The term slope means the amount of the slope (regardless of whether the call increases or
 decreases). To calculate the slope, the spectral bandwidth (frequency range: highest minus lowest
