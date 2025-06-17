@@ -90,18 +90,17 @@ Page 50. Table 4-1.
 
 Page 15 in Einglish translation:
 
->The term slope means the amount of the slope (regardless of whether the call increases or
+> The term slope means the amount of the slope (regardless of whether the call increases or
 decreases). To calculate the slope, the spectral bandwidth (frequency range: highest minus lowest
 frequency) is divided by the duration of the relevant call segment, or the entire call.
-- cf section: slope < 0.1 kHz/ms
-- qcf section: slope >= 0.1 and < 1 kHz/ms
-- FM section: slope >= 1 kHz/ms
-- cf call: average slope of the call < 0.1 kHz / ms
-- qcf call: average slope of the entire call is >= 0.1 and <1 kHz/ms
-- fm-qcf call: the call contains fm and qcf sections, each of which is at least 1 ms long. The
-average slope of the entire call must be >= 1 kHz, otherwise it is still a qcf call
-- fm call: the call does not contain any sections over 1 ms in length, the slope of which is < 1
-kHz/ms
+> 
+> - cf section: slope < 0.1 kHz/ms
+> - qcf section: slope >= 0.1 and < 1 kHz/ms
+> - FM section: slope >= 1 kHz/ms
+> - cf call: average slope of the call < 0.1 kHz / ms
+> - qcf call: average slope of the entire call is >= 0.1 and <1 kHz/ms
+> - fm-qcf call: the call contains fm and qcf sections, each of which is at least 1 ms long. The average slope of the entire call must be >= 1 kHz, otherwise it is still a qcf call
+> - fm call: the call does not contain any sections over 1 ms in length, the slope of which is < 1 kHz/ms
 
 ### Mac Aodha, O., et al. (2018)
 **Title:** Bat detective-Deep learning tools for bat acoustic signal detection
