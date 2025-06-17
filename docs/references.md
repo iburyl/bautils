@@ -62,15 +62,32 @@ Page 50. Table 4-1.
 | total slp | total slope (kHz/msec); overall change in frequency per change in msec (time) from the start of the call to the end of the call |
 | uppr slp | upper slope, hi ƒc to knee slope (kHz/msec); the slope of the upper portion or onset of the call from the highest frequency at the start of the downward sweep to the knee (listed as HiFtoKnSlope on SonoBat output) |
 
+## Bat Monitoring
+
+[List of European bats with call description](https://www.batmonitoring.org/en/species/)
+
 ## Academic Papers
 
-### Szewczak, J. M. (2010)
-**Title:** The benefits of full-spectrum data for analyzing bat echolocation calls  
-**Source:** [Presentation](https://sonobat.com/wp-content/uploads/2014/02/presentation.pdf)
+### Burkard Pfeiffer, Ulrich Marckmann (2020)
+**Title:** Bayerisches Landesamt für Umwelt Bestimmung von Fledermausrufaufnahmen und Kriterien für die Wertung von akustischen Artnachweisen. Teil 2: Myotis
+**Source (ge):** [researchgate.net](https://www.researchgate.net/publication/366020585_Bayerisches_Landesamt_fur_Umwelt_Bestimmung_von_Fledermausrufaufnahmen_und_Kriterien_fur_die_Wertung_von_akustischen_Artnachweisen_Teil_2_Myotis)
+
+### Burkard Pfeiffer, Ulrich Marckmann (2020)
+**Title:** Analysis of Bat Call Recordings and Criteria for the Evaluation of Acoustic Identification of Species.
+**Subtitle:** Part 1 – Genera Nyctalus, Eptesicus, Vespertilio, Pipistrellus (nyctaloid and pipistrelloid Species), Barbastelle, Long-eared Bats and Horseshoe Bats in Bavaria
+
+**Original Title:** Bayerisches Landesamt für Umwelt Fledermausschutz in Bayern Bestimmung von Fledermausrufaufnahmen und Kriterien für die Wertung von akustischen Artnachweisen: Teil 1
+
+**Source (en):** [batability.co.uk](https://batability.co.uk/wp-content/uploads/2020/08/Analysis-of-Batcalls-1.pdf)
+**Source (ge):** [researchgate.net](https://www.researchgate.net/publication/343166284_Bayerisches_Landesamt_fur_Umwelt_Fledermausschutz_in_Bayern_Bestimmung_von_Fledermausrufaufnahmen_und_Kriterien_fur_die_Wertung_von_akustischen_Artnachweisen_Teil_1)
 
 ### Mac Aodha, O., et al. (2018)
 **Title:** Bat detective-Deep learning tools for bat acoustic signal detection  
 **Source:** [PMC Article](https://pmc.ncbi.nlm.nih.gov/articles/PMC5843167/)
+
+### Szewczak, J. M. (2010)
+**Title:** The benefits of full-spectrum data for analyzing bat echolocation calls  
+**Source:** [Presentation](https://sonobat.com/wp-content/uploads/2014/02/presentation.pdf)
 
 ### Barclay, R. M. R., et al. (1999)
 **Title:** Variation in the echolocation calls of the hoary bat (Lasiurus cinereus): Influence of body size, habitat structure, and geographic location  
