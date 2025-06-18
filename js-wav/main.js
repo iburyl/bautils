@@ -106,6 +106,7 @@ function calculateSpeciesMatch(peakData, species, binToKHz, framesPerMillisec, s
         peakData.box.maxMagPoint.bin * binToKHz, // FME
         peakData.box.maxFreqPoint.bin * binToKHz, // Fmax
         peakData.box.minFreqPoint.bin * binToKHz, // Fmin
+        peakData.box.myotisKnickFreqPoint.bin * binToKHz, // Fmk
         Math.abs(peakData.box.upperSlope * slopeCoeff), // Upper slope
         Math.abs(peakData.box.lowerSlope * slopeCoeff), // Lower slope
         Math.abs(peakData.box.totalSlope * slopeCoeff)  // Total slope
@@ -118,6 +119,7 @@ function calculateSpeciesMatch(peakData, species, binToKHz, framesPerMillisec, s
         species.fmaxE,
         species.fhi,
         species.flo,
+        species.fmk,
         species.uppr_slope,
         species.lwr_slope,
         species.domnt_slope
@@ -260,7 +262,7 @@ function updatePeakOverlay()
             }
             
             // Create comparison data objects if species is selected
-            let durCompare = null, fcCompare = null, fmeCompare = null, fmaxCompare = null, fminCompare = null;
+            let durCompare = null, fcCompare = null, fmeCompare = null, fmaxCompare = null, fminCompare = null, fmkCompare = null;
             let upperSlopeCompare = null, lowerSlopeCompare = null, totalSlopeCompare = null, fcSlopeCompare = null;
             
             if (selectedSpecies) {
@@ -281,6 +283,9 @@ function updatePeakOverlay()
                 }
                 if (selectedSpecies.flo) {
                     fminCompare = processCharacteristic(selectedSpecies.flo);
+                }
+                if (selectedSpecies.fmk) {
+                    fmkCompare = processCharacteristic(selectedSpecies.fmk);
                 }
                 
                 // Slope comparisons (convert from kHz/ms to match our units)
@@ -313,12 +318,13 @@ function updatePeakOverlay()
                 addPoint('Fmax (highest frequency)', peakData.box.maxFreqPoint, fmaxCompare) + 
                 addPoint('Fmin (lowest frequency)', peakData.box.minFreqPoint, fminCompare) + 
                 addPoint('Fknee (knee frequency)', peakData.box.kneeFreqPoint) + 
+                addPoint('Fmk (max slope change after Fc)', peakData.box.myotisKnickFreqPoint, fmkCompare) + 
 
                 tableLine('Fmean (mean frequency)', (peakData.box.meanFreq * binToKHz).toFixed(1) + ' kHz', '', '') + 
 
                 tableSubtitle('Key slopes', 'Upper', 'Lower', 'Total') +  
                 tableLine(
-                    'Type: ' + peakData.box.ridgeType,  
+                    ((peakData.box.ridgeType && peakData.box.ridgeType != '') ? ('Type: ' + peakData.box.ridgeType) : ''),  
                     (peakData.box.upperSlope * slopeCoeff).toFixed(3) + ' kHz/ms' + (upperSlopeCompare ? '<br />'+getBar(Math.abs(peakData.box.upperSlope * slopeCoeff), upperSlopeCompare, ' kHz/ms') : ''), 
                     (peakData.box.lowerSlope * slopeCoeff).toFixed(3) + ' kHz/ms' + (lowerSlopeCompare ? '<br />'+getBar(Math.abs(peakData.box.lowerSlope * slopeCoeff), lowerSlopeCompare, ' kHz/ms') : ''), 
                     (peakData.box.totalSlope * slopeCoeff).toFixed(3) + ' kHz/ms' + (totalSlopeCompare ? '<br />'+getBar(Math.abs(peakData.box.totalSlope * slopeCoeff), totalSlopeCompare, ' kHz/ms') : '')) +    

@@ -79,7 +79,7 @@ function calculateSlopes(path) {
     if(path.length > 1) path[0].slope = path[1].slope;
 }
 
-// Calculate knee frequency - point where sum of left and right slope errors is minimal (best two-segment linear approximation)
+// Calculate knee frequency - point where deviation from linear approximation between start and end is minimal
 function findKneeFrequencyPoint(path, startPoint, endPoint) {
     if(path.length < 5) return {freq: path[0].bin, point: path[0]}; // Not enough points to detect slope changes
     
@@ -89,63 +89,49 @@ function findKneeFrequencyPoint(path, startPoint, endPoint) {
     if(endIndex - startIndex < 5) return {freq: path[startIndex].bin, point: path[startIndex]}; // Not enough points in range
     
     let minTotalError = Infinity;
-    
-    // Calculate bounds to ensure left and right segments have at least 15% of points each
-    const totalUsablePoints = endIndex - startIndex; // Points in the search range
-    const minSegmentSize = Math.ceil(totalUsablePoints * 0.15);
-    
-    // Left segment: indices startIndex+1 to i-1, needs at least minSegmentSize points
-    // So i-1 - (startIndex+1) + 1 >= minSegmentSize, therefore i >= startIndex + minSegmentSize + 1
-    const minKneeIndex = Math.max(startIndex + 2, startIndex + minSegmentSize + 1);
-    
-    // Right segment: indices i to endIndex, needs at least minSegmentSize points  
-    // So endIndex - i + 1 >= minSegmentSize, therefore i <= endIndex + 1 - minSegmentSize
-    const maxKneeIndex = Math.min(endIndex - 2, endIndex + 1 - minSegmentSize);
-    
-    let kneeIndex = minKneeIndex;
+    let kneeIndex = startIndex + Math.floor((endIndex - startIndex) / 2); // Default to middle
     
     // Test each potential knee point
-    for(let i = minKneeIndex; i <= maxKneeIndex; i++) {
-        // Calculate average slope for left segment (from start to point i-1)
-        let leftSum = 0;
-        let leftCount = 0;
-        for(let j = startIndex + 1; j < i; j++) {
-            if(path[j].slope !== null) {
-                leftSum += path[j].slope;
-                leftCount++;
-            }
-        }
-        const leftAvgSlope = leftCount > 0 ? leftSum / leftCount : 0;
+    for(let i = startIndex + 1; i < endIndex; i++) {
+        let totalError = 0;
         
-        // Calculate average slope for right segment (from point i to end)
-        let rightSum = 0;
-        let rightCount = 0;
-        for(let j = i; j <= endIndex && j < path.length; j++) {
-            if(path[j].slope !== null) {
-                rightSum += path[j].slope;
-                rightCount++;
-            }
-        }
-        const rightAvgSlope = rightCount > 0 ? rightSum / rightCount : 0;
+        // Calculate linear approximation for left segment (start to knee point)
+        const leftStartBin = path[startIndex].bin;
+        const leftStartFrame = path[startIndex].frame;
+        const leftEndBin = path[i].bin;
+        const leftEndFrame = path[i].frame;
         
-        // Calculate average error for left segment (deviation from left average slope)
-        let leftError = 0;
-        for(let j = startIndex + 1; j < i; j++) {
-            if(path[j].slope !== null) {
-                leftError += Math.abs(path[j].slope - leftAvgSlope);
-            }
-        }
+        const leftFrameDiff = leftEndFrame - leftStartFrame;
+        const leftBinDiff = leftEndBin - leftStartBin;
+        const leftSlope = leftFrameDiff !== 0 ? leftBinDiff / leftFrameDiff : 0;
+        const leftIntercept = leftStartBin - leftSlope * leftStartFrame;
         
-        // Calculate average error for right segment (deviation from right average slope)
-        let rightError = 0;
-        for(let j = i; j <= endIndex && j < path.length; j++) {
-            if(path[j].slope !== null) {
-                rightError += Math.abs(path[j].slope - rightAvgSlope);
-            }
+        // Calculate linear approximation for right segment (knee point to end)
+        const rightStartBin = path[i].bin;
+        const rightStartFrame = path[i].frame;
+        const rightEndBin = path[endIndex].bin;
+        const rightEndFrame = path[endIndex].frame;
+        
+        const rightFrameDiff = rightEndFrame - rightStartFrame;
+        const rightBinDiff = rightEndBin - rightStartBin;
+        const rightSlope = rightFrameDiff !== 0 ? rightBinDiff / rightFrameDiff : 0;
+        const rightIntercept = rightStartBin - rightSlope * rightStartFrame;
+        
+        // Calculate error for left segment
+        for(let j = startIndex; j <= i; j++) {
+            const point = path[j];
+            const expectedBin = leftSlope * point.frame + leftIntercept;
+            const binError = Math.abs(point.bin - expectedBin);
+            totalError += binError;
         }
         
-        // Total error is sum of left and right errors
-        const totalError = leftError + rightError;
+        // Calculate error for right segment
+        for(let j = i; j <= endIndex; j++) {
+            const point = path[j];
+            const expectedBin = rightSlope * point.frame + rightIntercept;
+            const binError = Math.abs(point.bin - expectedBin);
+            totalError += binError;
+        }
         
         // Find point with minimum total error
         if(totalError < minTotalError) {
@@ -209,45 +195,23 @@ function calculateCallType(path) {
         }
     };
 
-    // Helper function to calculate section type based on average slope
-    const getSectionType = (startPoint, endPoint) => {
-        let weightedSlope = 0;
-        let totalTime = 0;
-        
-        for (let i = startPoint.index + 1; i <= endPoint.index; i++) {
-            const timeInMs = (path[i].frame - path[i-1].frame) / framesPerMillisec;
-            weightedSlope += Math.abs(path[i].slope) * timeInMs;
-            totalTime += timeInMs;
-        }
-        
-        // Return null if section is too short
-        if (totalTime < 1) return null;
-        
-        const avgSlope = weightedSlope / totalTime * slopeCoeff;
-        
-        if (avgSlope < 0.1) return 'cf';
-        if (avgSlope <= 1.0) return 'qcf';
-        return 'fm';
-    };
-
     // Helper function to calculate section type based on linear slope between points
     const getSectionType2 = (startPoint, endPoint) => {
         const timeInMs = (endPoint.frame - startPoint.frame) / framesPerMillisec;
-        
-        // Return null if section is too short
-        if (timeInMs < 1) return null;
-        
+
         // Calculate linear slope between points
         const slope = (endPoint.bin - startPoint.bin) / (endPoint.frame - startPoint.frame);
         const slopeInKHzPerMs = Math.abs(slope * slopeCoeff);
         
-        if (slopeInKHzPerMs < 0.1) return 'cf';
-        if (slopeInKHzPerMs <= 1.0) return 'qcf';
-        return 'fm';
+        let type = '';
+        
+        if (slopeInKHzPerMs < 0.1) type = 'cf';
+        else if (slopeInKHzPerMs <= 1.0) type = 'qcf';
+        else type = 'fm';
+
+        return {type: type, timeInMs: timeInMs};
     };
 
-    let sections = [];
-    
     // Find middle point
     const middleIndex = Math.floor(path.length / 2);
     const middlePoint = path[middleIndex];
@@ -257,19 +221,33 @@ function calculateCallType(path) {
     const rightKnee = findKneeFrequencyPoint(path, middlePoint, path[path.length - 1]);
     
     // Analyze each section
-    const section1Type = getSectionType2(path[0], leftKnee);
-    const section2Type = getSectionType2(leftKnee, middlePoint);
-    const section3Type = getSectionType2(middlePoint, rightKnee);
-    const section4Type = getSectionType2(rightKnee, path[path.length - 1]);
-    
-    // Add sections, collapsing consecutive same types and skipping null sections
-    pushIfDifferent(section1Type);
-    pushIfDifferent(section2Type);
-    pushIfDifferent(section3Type);
-    pushIfDifferent(section4Type);
+    let sections = [
+        getSectionType2(path[0], leftKnee),
+        getSectionType2(leftKnee, middlePoint),
+        getSectionType2(middlePoint, rightKnee),
+        getSectionType2(rightKnee, path[path.length - 1])
+    ];
 
-    // Return concatenated section types with hyphens
-    return sections.join('-');
+    let changed = true;
+    while(changed)
+    {
+        changed = false;
+        if(sections.length == 1) break;
+
+        for(let i = 0; i < sections.length - 1; i++)
+        {
+            if(sections[i].type == sections[i + 1].type)
+            {
+                sections[i].timeInMs += sections[i + 1].timeInMs;
+                sections.splice(i + 1, 1);
+                changed = true;
+                continue;
+            }
+        }
+    }
+    console.log(sections);
+    sections = sections.filter(section => section.timeInMs > 1);    
+    return sections.map(section => section.type).join('-');
 }
 
 // Calculate comprehensive statistics and measurements for a detected peak box
@@ -350,7 +328,10 @@ function getRidgeStats(peak)
     peak.box.minFreqPoint = minFreqPoint;
     peak.box.maxFreqPoint = maxFreqPoint;
     peak.box.maxMagPoint = maxMagPoint;
+    peak.box.myotisKnickFreqPoint = findKneeFrequencyPoint(path, characteristicFreqPoint, path[path.length - 1]);
     peak.box.ridgeType = calculateCallType(path);
+
+    console.log(peak.box.myotisKnickFreqPoint);
 
 
     

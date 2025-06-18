@@ -108,6 +108,9 @@ function drawFoundPeaks(firstFrame, lastFrame, firstBin, lastBin, specCanvasWind
 
             // Knee frequency point
             drawCircle(ctx, specCanvasWindow, box.kneeFreqPoint, firstBin, framesPerPixel, binsPerPixel, 'white', 'Fknee');
+
+            // Myotis knick frequency point
+            drawCircle(ctx, specCanvasWindow, box.myotisKnickFreqPoint, firstBin, framesPerPixel, binsPerPixel, 'white', 'Fmk');
         }
     }
 }
