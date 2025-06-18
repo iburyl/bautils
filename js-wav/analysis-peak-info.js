@@ -28,8 +28,8 @@ function calculatePeak(sampleRate, spectrogramData, peakFreq)
     const sortedFreq = peakFreq.toSorted((a, b) => a - b);
     const magNoiseThreshold = sortedFreq[ Math.round(0.1 * (sortedFreq.length - 1)) ] * 10;
 
-    searchFreqPeak.box = getBox(searchFreqPeak, spectrogramData, searchFirstBin, searchLastBin, magNoiseThreshold);
-    getBoxStats(searchFreqPeak);
+    searchFreqPeak.box = traceRidge(searchFreqPeak, spectrogramData, searchFirstBin, searchLastBin, magNoiseThreshold);
+    getRidgeStats(searchFreqPeak);
 
     return searchFreqPeak;
 }
@@ -80,36 +80,27 @@ function calculateSlopes(path) {
 }
 
 // Calculate knee frequency - point where sum of left and right slope errors is minimal (best two-segment linear approximation)
-function calculateKneeFrequency(path, characteristicFreqPoint) {
+function findKneeFrequencyPoint(path, startPoint, endPoint) {
     if(path.length < 5) return {freq: path[0].bin, point: path[0]}; // Not enough points to detect slope changes
     
-    // Find the index of the characteristic frequency point in the path
-    let charFreqIndex = path.length - 1; // Default to end if not found
-    for(let i = 0; i < path.length; i++) {
-        if(path[i].frame === characteristicFreqPoint.frame && path[i].bin === characteristicFreqPoint.bin) {
-            charFreqIndex = i;
-            break;
-        }
-    }
+    const startIndex = startPoint.index;
+    const endIndex = endPoint.index;
     
-    // Only search for knee up to the characteristic frequency point
-    const searchEndIndex = Math.min(charFreqIndex, path.length - 1);
-    
-    if(searchEndIndex < 5) return {freq: path[0].bin, point: path[0]}; // Not enough points before characteristic frequency
+    if(endIndex - startIndex < 5) return {freq: path[startIndex].bin, point: path[startIndex]}; // Not enough points in range
     
     let minTotalError = Infinity;
     
     // Calculate bounds to ensure left and right segments have at least 15% of points each
-    const totalUsablePoints = searchEndIndex; // Points from index 1 to searchEndIndex (index 0 has null slope)
+    const totalUsablePoints = endIndex - startIndex; // Points in the search range
     const minSegmentSize = Math.ceil(totalUsablePoints * 0.15);
     
-    // Left segment: indices 1 to i-1, needs at least minSegmentSize points
-    // So i-1 >= minSegmentSize, therefore i >= minSegmentSize + 1
-    const minKneeIndex = Math.max(2, minSegmentSize + 1);
+    // Left segment: indices startIndex+1 to i-1, needs at least minSegmentSize points
+    // So i-1 - (startIndex+1) + 1 >= minSegmentSize, therefore i >= startIndex + minSegmentSize + 1
+    const minKneeIndex = Math.max(startIndex + 2, startIndex + minSegmentSize + 1);
     
-    // Right segment: indices i to searchEndIndex, needs at least minSegmentSize points  
-    // So searchEndIndex - i + 1 >= minSegmentSize, therefore i <= searchEndIndex + 1 - minSegmentSize
-    const maxKneeIndex = Math.min(searchEndIndex - 2, searchEndIndex + 1 - minSegmentSize);
+    // Right segment: indices i to endIndex, needs at least minSegmentSize points  
+    // So endIndex - i + 1 >= minSegmentSize, therefore i <= endIndex + 1 - minSegmentSize
+    const maxKneeIndex = Math.min(endIndex - 2, endIndex + 1 - minSegmentSize);
     
     let kneeIndex = minKneeIndex;
     
@@ -118,7 +109,7 @@ function calculateKneeFrequency(path, characteristicFreqPoint) {
         // Calculate average slope for left segment (from start to point i-1)
         let leftSum = 0;
         let leftCount = 0;
-        for(let j = 1; j < i; j++) {
+        for(let j = startIndex + 1; j < i; j++) {
             if(path[j].slope !== null) {
                 leftSum += path[j].slope;
                 leftCount++;
@@ -126,10 +117,10 @@ function calculateKneeFrequency(path, characteristicFreqPoint) {
         }
         const leftAvgSlope = leftCount > 0 ? leftSum / leftCount : 0;
         
-        // Calculate average slope for right segment (from point i to characteristic frequency)
+        // Calculate average slope for right segment (from point i to end)
         let rightSum = 0;
         let rightCount = 0;
-        for(let j = i; j <= searchEndIndex && j < path.length; j++) {
+        for(let j = i; j <= endIndex && j < path.length; j++) {
             if(path[j].slope !== null) {
                 rightSum += path[j].slope;
                 rightCount++;
@@ -139,7 +130,7 @@ function calculateKneeFrequency(path, characteristicFreqPoint) {
         
         // Calculate average error for left segment (deviation from left average slope)
         let leftError = 0;
-        for(let j = 1; j < i; j++) {
+        for(let j = startIndex + 1; j < i; j++) {
             if(path[j].slope !== null) {
                 leftError += Math.abs(path[j].slope - leftAvgSlope);
             }
@@ -147,7 +138,7 @@ function calculateKneeFrequency(path, characteristicFreqPoint) {
         
         // Calculate average error for right segment (deviation from right average slope)
         let rightError = 0;
-        for(let j = i; j <= searchEndIndex && j < path.length; j++) {
+        for(let j = i; j <= endIndex && j < path.length; j++) {
             if(path[j].slope !== null) {
                 rightError += Math.abs(path[j].slope - rightAvgSlope);
             }
@@ -163,13 +154,12 @@ function calculateKneeFrequency(path, characteristicFreqPoint) {
         }
     }
     
-    const kneePoint = path[kneeIndex];
-    return {freq: kneePoint.bin, point: kneePoint};
+    return path[kneeIndex];
 }
 
 // Calculate Characteristic frequency - frequency at the right hand end of the portion with lowest absolute slope
-function calculateCharacteristicFrequency(path) {
-    if(path.length < 3) return {freq: path.at(-1).bin, point: path.at(-1)}; // Not enough points to apply sliding window approach
+function findCharacteristicFrequencyPoint(path) {
+    if(path.length < 3) return path.at(-1); // Not enough points to apply sliding window approach
 
     // Find the portion with lowest absolute slope using a sliding window approach
     const numSlopes = path.length - 1; // Number of slope segments
@@ -191,15 +181,99 @@ function calculateCharacteristicFrequency(path) {
         }
     }
     
-    // Return the frequency and point at the right end of the lowest slope portion
-    // The slope index corresponds to the segment between points, so we take the end point
     const rightEndIndex = Math.min(bestWindowEnd + 1, path.length - 1);
-    const characteristicPoint = path[rightEndIndex];
-    return {freq: characteristicPoint.bin, point: characteristicPoint};
+    return path[rightEndIndex];
+}
+
+function calculateCallType(path) {
+    if (!path || path.length < 2) return '';
+    
+    const signalWindow = window.sharedSignalWindow;
+    const sampleRate = signalWindow.sampleRate;
+
+    const numBins = window.sharedData.specData.data[0].length;
+    const numFrames = window.sharedData.specData.data.length;
+
+    const binToKHz = (sampleRate / 1000) / numBins;
+    const framesPerSec = numFrames / signalWindow.duration;
+    const framesPerMillisec = framesPerSec / 1000;
+    const slopeCoeff = binToKHz * framesPerMillisec;
+
+    // Convert slope from bins/frame to kHz/ms
+    const slopeToKHzPerMs = (slope) => { return slope * slopeCoeff; };
+
+    // Helper function to add section only if different from last one
+    const pushIfDifferent = (type) => {
+        if (type && (sections.length === 0 || sections[sections.length - 1] !== type)) {
+            sections.push(type);
+        }
+    };
+
+    // Helper function to calculate section type based on average slope
+    const getSectionType = (startPoint, endPoint) => {
+        let weightedSlope = 0;
+        let totalTime = 0;
+        
+        for (let i = startPoint.index + 1; i <= endPoint.index; i++) {
+            const timeInMs = (path[i].frame - path[i-1].frame) / framesPerMillisec;
+            weightedSlope += Math.abs(path[i].slope) * timeInMs;
+            totalTime += timeInMs;
+        }
+        
+        // Return null if section is too short
+        if (totalTime < 1) return null;
+        
+        const avgSlope = weightedSlope / totalTime * slopeCoeff;
+        
+        if (avgSlope < 0.1) return 'cf';
+        if (avgSlope <= 1.0) return 'qcf';
+        return 'fm';
+    };
+
+    // Helper function to calculate section type based on linear slope between points
+    const getSectionType2 = (startPoint, endPoint) => {
+        const timeInMs = (endPoint.frame - startPoint.frame) / framesPerMillisec;
+        
+        // Return null if section is too short
+        if (timeInMs < 1) return null;
+        
+        // Calculate linear slope between points
+        const slope = (endPoint.bin - startPoint.bin) / (endPoint.frame - startPoint.frame);
+        const slopeInKHzPerMs = Math.abs(slope * slopeCoeff);
+        
+        if (slopeInKHzPerMs < 0.1) return 'cf';
+        if (slopeInKHzPerMs <= 1.0) return 'qcf';
+        return 'fm';
+    };
+
+    let sections = [];
+    
+    // Find middle point
+    const middleIndex = Math.floor(path.length / 2);
+    const middlePoint = path[middleIndex];
+    
+    // Find knee points for left and right sections
+    const leftKnee = findKneeFrequencyPoint(path, path[0], middlePoint);
+    const rightKnee = findKneeFrequencyPoint(path, middlePoint, path[path.length - 1]);
+    
+    // Analyze each section
+    const section1Type = getSectionType2(path[0], leftKnee);
+    const section2Type = getSectionType2(leftKnee, middlePoint);
+    const section3Type = getSectionType2(middlePoint, rightKnee);
+    const section4Type = getSectionType2(rightKnee, path[path.length - 1]);
+    
+    // Add sections, collapsing consecutive same types and skipping null sections
+    pushIfDifferent(section1Type);
+    pushIfDifferent(section2Type);
+    pushIfDifferent(section3Type);
+    pushIfDifferent(section4Type);
+
+    // Return concatenated section types with hyphens
+    return sections.join('-');
 }
 
 // Calculate comprehensive statistics and measurements for a detected peak box
-function getBoxStats(peak)
+function getRidgeStats(peak)
 {
     const path = peak.box.path;
     const noiseThreshold = -20 * Math.log10(peak.value / peak.box.magNoiseThreshold);
@@ -244,13 +318,9 @@ function getBoxStats(peak)
         }
     }
     
-    const characteristicResult = calculateCharacteristicFrequency(path);
-    const characteristicFreq = characteristicResult.freq;
-    const characteristicFreqPoint = characteristicResult.point;
+    const characteristicFreqPoint = findCharacteristicFrequencyPoint(path);
 
-    const kneeResult = calculateKneeFrequency(path, characteristicFreqPoint);
-    const kneeFreq = kneeResult.freq;
-    const kneeFreqPoint = kneeResult.point;
+    const kneeFreqPoint = findKneeFrequencyPoint(path, path[0], characteristicFreqPoint);
 
     // Calculate Lower slope: knee to characteristic point slope
     const lowerSlope = (characteristicFreqPoint.frame !== kneeFreqPoint.frame) ? 
@@ -280,6 +350,7 @@ function getBoxStats(peak)
     peak.box.minFreqPoint = minFreqPoint;
     peak.box.maxFreqPoint = maxFreqPoint;
     peak.box.maxMagPoint = maxMagPoint;
+    peak.box.ridgeType = calculateCallType(path);
 
 
     
@@ -347,7 +418,7 @@ function detectRidgeSubPixel(lastFrame, lastBin, binWindow, frameDirection, last
 }
 
 // Create a bounding box around a peak by tracing ridge paths in both directions
-function getBox(peakStat, spectrogramData, lowBin, upperBin, magNoiseThreshold=0) {
+function traceRidge(peakStat, spectrogramData, lowBin, upperBin, magNoiseThreshold=0) {
     const detectRidge = detectRidgeSubPixel;
 
     let startFrame = peakStat.frame;
@@ -377,7 +448,6 @@ function getBox(peakStat, spectrogramData, lowBin, upperBin, magNoiseThreshold=0
         for(let maxPoints=numFrames; maxPoints>0; maxPoints--)
         {
             nextPoint = detectRidge(nextPoint.frame, nextPoint.bin, binWindow, direction, nextPoint.lastYMove, spectrogramData);
-            if(maxPoints==numFrames) firstPoint.lastYMove = Math.PI - nextPoint.lastYMove;
             value = Math.max(nextPoint.value, value);
             path.push({bin:nextPoint.bin, frame:nextPoint.frame, value:nextPoint.value});
             maxF = Math.max(maxF, nextPoint.bin);
@@ -389,14 +459,20 @@ function getBox(peakStat, spectrogramData, lowBin, upperBin, magNoiseThreshold=0
     let firstPoint = {frame:startFrame, bin:startBin, value:value, lastYMove:0};
 
     makePath(firstPoint, +1, spectrogramData, rightMagDropCoeff, rightNoiseThreshold, rightPath);
+    firstPoint = rightPath[0];
+    firstPoint.lastYMove=0;
     makePath(firstPoint, -1, spectrogramData, leftMagDropCoeff, leftNoiseThreshold, leftPath);
     
     // Merge paths into a single path with starting point in the middle
     const singlePath = [
         ...leftPath.reverse(),
-        {bin: startBin, frame: startFrame, value: value},
         ...rightPath
     ];
+    
+    // Add index to each point
+    singlePath.forEach((point, index) => {
+        point.index = index;
+    });
     
     const right = singlePath[singlePath.length - 1].frame;
     const left  = singlePath[0].frame;

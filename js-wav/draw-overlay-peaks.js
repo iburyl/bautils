@@ -1,6 +1,8 @@
 "use strict";
 
 function drawCircle(ctx, specCanvasWindow, point, firstBin, framesPerPixel, binsPerPixel, color, label = null, radius = 6) {
+    if (!point) return;
+
     // Calculate x and y coordinates from point data
     const point_x = Math.floor((point.frame + 0.5) / framesPerPixel);
     const point_y = Math.floor((point.bin - firstBin + 0.5) / binsPerPixel);
@@ -89,9 +91,8 @@ function drawFoundPeaks(firstFrame, lastFrame, firstBin, lastBin, specCanvasWind
         drawRidgePath(foundPeaks[i].box.path, framesPerPixel, binsPerPixel, specCanvasWindow, pth_color, ctx);
 
         if(delta>100) {
-            // Draw circles around key points using values calculated by getBoxStats
+            // Draw circles around key points
             const box = foundPeaks[i].box;
-            if (!box.maxFreqPoint || !box.minFreqPoint || !box.maxMagPoint) getBoxStats(foundPeaks[i]);
 
             // Max frequency point
             drawCircle(ctx, specCanvasWindow, box.maxFreqPoint, firstBin, framesPerPixel, binsPerPixel, 'white', 'Fmax');

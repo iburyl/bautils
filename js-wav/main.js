@@ -293,8 +293,8 @@ function updatePeakOverlay()
                 if (selectedSpecies.domnt_slope) {
                     totalSlopeCompare = processCharacteristic(selectedSpecies.domnt_slope);
                 }
-                if (selectedSpecies.slope_fc) {
-                    fcSlopeCompare = processCharacteristic(selectedSpecies.slope_fc);
+                if (selectedSpecies.fc_slope) {
+                    fcSlopeCompare = processCharacteristic(selectedSpecies.fc_slope);
                 }
             }
             
@@ -317,7 +317,8 @@ function updatePeakOverlay()
                 tableLine('Fmean (mean frequency)', (peakData.box.meanFreq * binToKHz).toFixed(1) + ' kHz', '', '') + 
 
                 tableSubtitle('Key slopes', 'Upper', 'Lower', 'Total') +  
-                tableLine('',  
+                tableLine(
+                    'Type: ' + peakData.box.ridgeType,  
                     (peakData.box.upperSlope * slopeCoeff).toFixed(3) + ' kHz/ms' + (upperSlopeCompare ? '<br />'+getBar(Math.abs(peakData.box.upperSlope * slopeCoeff), upperSlopeCompare, ' kHz/ms') : ''), 
                     (peakData.box.lowerSlope * slopeCoeff).toFixed(3) + ' kHz/ms' + (lowerSlopeCompare ? '<br />'+getBar(Math.abs(peakData.box.lowerSlope * slopeCoeff), lowerSlopeCompare, ' kHz/ms') : ''), 
                     (peakData.box.totalSlope * slopeCoeff).toFixed(3) + ' kHz/ms' + (totalSlopeCompare ? '<br />'+getBar(Math.abs(peakData.box.totalSlope * slopeCoeff), totalSlopeCompare, ' kHz/ms') : '')) +    
@@ -329,7 +330,6 @@ function updatePeakOverlay()
                     (peakData.box.noiseThreshold).toFixed(1) + ' dB') + 
                 chiSquareResult + // Add chi-square test results
                 '</table>';
-
             }
         
         addStats('Found peak', peakStatsDiv, peak, window.sharedSignalWindow, window.sharedData.timeData.data.length, window.sharedData.specData.data[0].length);
