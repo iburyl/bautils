@@ -22,7 +22,7 @@ window.speciesData.push(
   {
     "species": "Nyctalus noctula; fm",
     "common_name": "Noctule",
-    "fc": {"stddev": [26, 30], "range": [24, 30]},
+    "fmk": {"stddev": [26, 30], "range": [24, 30]},
     "dur": {"stddev": [3, 7]},
     "domnt_slope": {"stddev": [1.0,10.0]}
   },
@@ -44,7 +44,7 @@ window.speciesData.push(
   {
     "species": "Nyctalus leisleri; fm",
     "common_name": "Leisler's Bat",
-    "fc": {"stddev": [28, 32], "range": [26, 32]},
+    "fmk": {"stddev": [28, 32], "range": [26, 32]},
     "dur": {"stddev": [3, 5], "range": [3, 6]},
     "domnt_slope": {"stddev": [1.0,10.0]}
   },
@@ -66,7 +66,7 @@ window.speciesData.push(
   {
     "species": "Vespertilio murinus; fm",
     "common_name": "Parti-coloured Bat",
-    "fc": {"stddev": [25, 30], "range": [23, 30]},
+    "fmk": {"stddev": [25, 30], "range": [23, 30]},
     "dur": {"stddev": [3, 5], "range": [3, 7]},
     "domnt_slope": {"stddev": [1.0,10.0]}
   },
@@ -88,7 +88,7 @@ window.speciesData.push(
   {
     "species": "Eptesicus serotinus; fm",
     "common_name": "Serotine",
-    "fc": {"stddev": [26, 34], "range": [25, 34]},
+    "fmk": {"stddev": [26, 34], "range": [25, 34]},
     "dur": {"stddev": [3, 7]},
     "domnt_slope": {"stddev": [1.0,10.0]}
   },
@@ -110,7 +110,7 @@ window.speciesData.push(
   {
     "species": "Eptesicus nilssonii; fm",
     "common_name": "Northern Bat",
-    "fc": {"stddev": [26, 35]},
+    "fmk": {"stddev": [26, 35]},
     "dur": {"stddev": [3, 7]},
     "domnt_slope": {"stddev": [1.0,10.0]}
   },
@@ -132,7 +132,7 @@ window.speciesData.push(
   {
     "species": "Hypsugo savii; fm",
     "common_name": "Savi's pipistrelle",
-    "fc": {"stddev": [34, 41]},
+    "fmk": {"stddev": [34, 41]},
     "dur": {"stddev": [3, 5], "range": [3, 7]},
     "domnt_slope": {"stddev": [1.0,10.0]}
   },
@@ -154,7 +154,7 @@ window.speciesData.push(
   {
     "species": "Pipistrellus kuhlii and P. nathusii; fm",
     "common_name": "Kuhl's and Nathusius' Pipstrelles",
-    "fc": {"stddev": [36, 46]},
+    "fmk": {"stddev": [36, 46]},
     "dur": {"stddev": [3, 5], "range": [3, 6]},
     "domnt_slope": {"stddev": [1.0,10.0]}
   },
@@ -176,7 +176,7 @@ window.speciesData.push(
   {
     "species": "Pipistrellus pipistrellus; fm",
     "common_name": "Common Pipistrelle",
-    "fc": {"stddev": [45, 55], "range": [44, 55]},
+    "fmk": {"stddev": [45, 55], "range": [44, 55]},
     "dur": {"stddev": [3, 5], "range": [3, 6]},
     "domnt_slope": {"stddev": [1.0,10.0]}
   },
@@ -198,7 +198,7 @@ window.speciesData.push(
   {
     "species": "Pipistrellus pygmaeus; fm",
     "common_name": "Soprano Pipistrelle",
-    "fc": {"stddev": [56, 68]},
+    "fmk": {"stddev": [56, 68]},
     "dur": {"stddev": [3, 5], "range": [3, 7]},
     "domnt_slope": {"stddev": [1.0,10.0]}
   },
