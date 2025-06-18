@@ -1,6 +1,7 @@
 window.speciesData.push(
 {
     "source_name": "SonoBat: Echolocation Call Characteristics of Western North American Bats",
+    "source_ref": "Echolocation Call Characteristics of Western North American Bats; Joe Szewczak, Cal Poly Humboldt Bat Lab, 2006, 2011, 2018, 2022, 2024",
     "source_href": "https://sonobat.com/download/Western_NA_Bat_Acoustic_Table.pdf",
     "species":
 [
@@ -16,7 +17,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 13.3, "stddev": [17, 10], "range": [3.8, 31]},
     "lwr_slope": {"mean:": 5.6, "stddev": [7.0, 4.2], "range": [2.0, 12]},
     "fc_slope": {"mean:": 5.5, "stddev": [8.3, 2.7], "range": [0, 20]},
-    "domnt_slope": {"mean:": 6.1, "stddev": [8.5, 3.7], "range": [2.1, 21]}
+    "domnt_slope": {"mean:": 6.1, "stddev": [8.5, 3.7], "range": [2.1, 21]},
+    "source_ref": "page 2"
   },
   {
     "species": "Myotis yumanensis",
@@ -30,7 +32,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 16.2, "stddev": [22,11], "range": [1.4,41]},
     "lwr_slope": {"mean:": 4.2, "stddev": [6.5,2.0], "range": [0.9,17]},
     "fc_slope": {"mean:": 2.9, "stddev": [4.8,1.1], "range": [0,17]},
-    "domnt_slope": {"mean:": 4.3, "stddev": [8.4,0.7], "range": [0.7,35]}
+    "domnt_slope": {"mean:": 4.3, "stddev": [8.4,0.7], "range": [0.7,35]},
+    "source_ref": "page 2"
   },
   {
     "species": "Myotis californicus",
@@ -44,7 +47,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 22.9, "stddev": [33,15], "range": [2.4,56]},
     "lwr_slope": {"mean:": 6.8, "stddev": [10,3.9], "range": [0.1,25]},
     "fc_slope": {"mean:": 3.5, "stddev": [7,0.4], "range": [0,27]},
-    "domnt_slope": {"mean:": 9.7, "stddev": [19,1.0], "range": [1.0,57]}
+    "domnt_slope": {"mean:": 9.7, "stddev": [19,1.0], "range": [1.0,57]},
+    "source_ref": "page 2"
   },
   {
     "species": "Parastrellus hesperus",
@@ -58,7 +62,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 9.4, "stddev": [18,1.3], "range": [0.7,47]},
     "lwr_slope": {"mean:": 1.1, "stddev": [2.0,0.2], "range": [0,6.8]},
     "fc_slope": {"mean:": 0.8, "stddev": [1.8,0], "range": [0,8.5]},
-    "domnt_slope": {"mean:": 1.1, "stddev": [2.0,0.2], "range": [0,12]}
+    "domnt_slope": {"mean:": 1.1, "stddev": [2.0,0.2], "range": [0,12]},
+    "source_ref": "page 2"
   },
   {
     "species": "Choeronycteris mexicana",
@@ -72,7 +77,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 14.3, "stddev": [24,5], "range": [2.1,44]},
     "lwr_slope": {"mean:": 4.9, "stddev": [6.9,2.8], "range": [0.7,11]},
     "fc_slope": {"mean:": 3.9, "stddev": [6.6,1.3], "range": [0.3,13]},
-    "domnt_slope": {"mean:": 6.5, "stddev": [9.5,3.6], "range": [1.9,16]}
+    "domnt_slope": {"mean:": 6.5, "stddev": [9.5,3.6], "range": [1.9,16]},
+    "source_ref": "page 3"
   },
   {
     "species": "Lasiurus frantzii (blossevillii)",
@@ -86,7 +92,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 7.3, "stddev": [13,1.6], "range": [0.4,40]},
     "lwr_slope": {"mean:": 1.7, "stddev": [3.7,0], "range": [0,17]},
     "fc_slope": {"mean:": 1.0, "stddev": [2.4,0], "range": [0,16]},
-    "domnt_slope": {"mean:": 2.2, "stddev": [5.5,0], "range": [0,43]}
+    "domnt_slope": {"mean:": 2.2, "stddev": [5.5,0], "range": [0,43]},
+    "source_ref": "page 3"
   },
   {
     "species": "Leptonycteris species",
@@ -100,7 +107,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 10.6, "stddev": [16,5.2], "range": [1.9,42]},
     "lwr_slope": {"mean:": 3.3, "stddev": [5.0,1.7], "range": [0.5,13]},
     "fc_slope": {"mean:": 2.9, "stddev": [4.5,1.2], "range": [0,12]},
-    "domnt_slope": {"mean:": 3.2, "stddev": [4.8,1.5], "range": [0.3,13]}
+    "domnt_slope": {"mean:": 3.2, "stddev": [4.8,1.5], "range": [0.3,13]},
+    "source_ref": "page 3"
   },
   {
     "species": "Myotis ciliolabrum",
@@ -114,7 +122,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 23.9, "stddev": [33,15], "range": [4.9,53]},
     "lwr_slope": {"mean:": 6.3, "stddev": [8.7,4.0], "range": [0.4,16]},
     "fc_slope": {"mean:": 2.7, "stddev": [4.6,0.9], "range": [0,12]},
-    "domnt_slope": {"mean:": 7.2, "stddev": [12,2.7], "range": [1.2,29]}
+    "domnt_slope": {"mean:": 7.2, "stddev": [12,2.7], "range": [1.2,29]},
+    "source_ref": "page 4"
   },
   {
     "species": "Myotis volans",
@@ -128,7 +137,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 16.7, "stddev": [23,11], "range": [3.3,50]},
     "lwr_slope": {"mean:": 7.2, "stddev": [10,4.4], "range": [0.1,24]},
     "fc_slope": {"mean:": 4.8, "stddev": [7.8,1.7], "range": [0,26]},
-    "domnt_slope": {"mean:": 9.5, "stddev": [15,3.7], "range": [1.7,36]}
+    "domnt_slope": {"mean:": 9.5, "stddev": [15,3.7], "range": [1.7,36]},
+    "source_ref": "page 4"
   },
   {
     "species": "Myotis velifer",
@@ -143,7 +153,8 @@ window.speciesData.push(
     "lwr_slope": {"mean:": 4.1, "stddev": [6.0,2.2], "range": [0.7,15]},
     "fc_slope": {"mean:": 1.8, "stddev": [3.4,0.3], "range": [0,11]},
     "domnt_slope": {"mean:": 5.1, "stddev": [9.6,0.6], "range": [0.6,33]},
-    "comment": "error in SonoBat dur_range"
+    "comment": "error in SonoBat dur_range",
+    "source_ref": "page 4"
   },
   {
     "species": "Myotis lucifugus",
@@ -157,10 +168,11 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 10.8, "stddev": [16,5.1], "range": [1.5,16]},
     "lwr_slope": {"mean:": 3.2, "stddev": [5.1,1.2], "range": [0.4,16]},
     "fc_slope": {"mean:": 1.6, "stddev": [3.2,0.1], "range": [0,14]},
-    "domnt_slope": {"mean:": 3.3, "stddev": [6.0,0.7], "range": [0.2,29]}
+    "domnt_slope": {"mean:": 3.3, "stddev": [6.0,0.7], "range": [0.2,29]},
+    "source_ref": "page 4"
   },
   {
-    "species": "Myotis Auriculus",
+    "species": "Myotis auriculus",
     "code": "Myar",
     "common_name": "Southwestern myotis",
     "fc": {"mean:": 40.6, "stddev": [45,36], "range": [31,54]},
@@ -171,7 +183,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 19.2, "stddev": [26,12], "range": [4.2,44]},
     "lwr_slope": {"mean:": 8.1, "stddev": [12,4.2], "range": [2.3,26]},
     "fc_slope": {"mean:": 5.6, "stddev": [9.8,1.8], "range": [0,31]},
-    "domnt_slope": {"mean:": 10.0, "stddev": [18,2.4], "range": [2.2,44]}
+    "domnt_slope": {"mean:": 10.0, "stddev": [18,2.4], "range": [2.2,44]},
+    "source_ref": "page 4"
   },
   {
     "species": "Myotis evotis",
@@ -185,7 +198,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 19.6, "stddev": [29,13], "range": [4.7,46]},
     "lwr_slope": {"mean:": 8.6, "stddev": [13,4.6], "range": [1.8,28]},
     "fc_slope": {"mean:": 5.7, "stddev": [10,1.7], "range": [0,31]},
-    "domnt_slope": {"mean:": 10.7, "stddev": [18,3.6], "range": [1.3,45]}
+    "domnt_slope": {"mean:": 10.7, "stddev": [18,3.6], "range": [1.3,45]},
+    "source_ref": "page 5"
   },
   {
     "species": "Lasiurus xanthinus",
@@ -199,7 +213,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 7.8, "stddev": [13,2], "range": [0.3,30]},
     "lwr_slope": {"mean:": 1.5, "stddev": [2.7,0.2], "range": [0,7]},
     "fc_slope": {"mean:": 0.8, "stddev": [1.5,0], "range": [0,6]},
-    "domnt_slope": {"mean:": 1.7, "stddev": [3.2,0.2], "range": [0,11]}
+    "domnt_slope": {"mean:": 1.7, "stddev": [3.2,0.2], "range": [0,11]},
+    "source_ref": "page 5"
   },
   {
     "species": "Antrozous pallidus",
@@ -214,7 +229,8 @@ window.speciesData.push(
     "lwr_slope": {"mean:": 2.1, "stddev": [3.2,0.9], "range": [0,8.1]},
     "fc_slope": {"mean:": 1.2, "stddev": [2.1,0.3], "range": [0,6.3]},
     "domnt_slope": {"mean:": 2.6, "stddev": [4,1.3], "range": [0,10]},
-    "comment": "error in SonoBat fhi_mean"
+    "comment": "error in SonoBat fhi_mean",
+    "source_ref": "page 5"
   },
   {
     "species": "Eptesicus fuscus",
@@ -228,7 +244,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 7.2, "stddev": [11,3.7], "range": [0.4,20]},
     "lwr_slope": {"mean:": 2.0, "stddev": [3.4,0.6], "range": [0,11]},
     "fc_slope": {"mean:": 1.2, "stddev": [2.3,0.1], "range": [0,8.4]},
-    "domnt_slope": {"mean:": 2.4, "stddev": [4.4,0.4], "range": [0,18]}
+    "domnt_slope": {"mean:": 2.4, "stddev": [4.4,0.4], "range": [0,18]},
+    "source_ref": "page 5"
   },
   {
     "species": "Lasionycteris noctivagans",
@@ -242,7 +259,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 7.1, "stddev": [11,3.2], "range": [0,19]},
     "lwr_slope": {"mean:": 1.9, "stddev": [3.7,0.1], "range": [0,11]},
     "fc_slope": {"mean:": 1.6, "stddev": [3,0.1], "range": [0,10]},
-    "domnt_slope": {"mean:": 2.3, "stddev": [4.9,0], "range": [0,18]}
+    "domnt_slope": {"mean:": 2.3, "stddev": [4.9,0], "range": [0,18]},
+    "source_ref": "page 5"
   },
   {
     "species": "Myotis thysanodes",
@@ -256,7 +274,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 17.1, "stddev": [25,10], "range": [4,48]},
     "lwr_slope": {"mean:": 8.6, "stddev": [14,3.6], "range": [1.2,37]},
     "fc_slope": {"mean:": 6.2, "stddev": [11,1.6], "range": [0.1,32]},
-    "domnt_slope": {"mean:": 11.6, "stddev": [19,4.2], "range": [1.2,50]}
+    "domnt_slope": {"mean:": 11.6, "stddev": [19,4.2], "range": [1.2,50]},
+    "source_ref": "page 6"
   },
   {
     "species": "Tadarida brasiliensis",
@@ -270,7 +289,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 1.6, "stddev": [3.8,0], "range": [0,17]},
     "lwr_slope": {"mean:": 0.6, "stddev": [1.5,0], "range": [0,10]},
     "fc_slope": {"mean:": 0.6, "stddev": [1.5,0], "range": [0,11]},
-    "domnt_slope": {"mean:": 0.6, "stddev": [1.8,0], "range": [0,15]}
+    "domnt_slope": {"mean:": 0.6, "stddev": [1.8,0], "range": [0,15]},
+    "source_ref": "page 6"
   },
   {
     "species": "Corynorhinus townsendii",
@@ -284,7 +304,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 6.2, "stddev": [8.1,4.2], "range": [0,15]},
     "lwr_slope": {"mean:": 5.3, "stddev": [7.1,3.4], "range": [0,16]},
     "fc_slope": {"mean:": 4.9, "stddev": [7.2,2.5], "range": [0.1,23]},
-    "domnt_slope": {"mean:": 5.5, "stddev": [7.34,3.7], "range": [0,17]}
+    "domnt_slope": {"mean:": 5.5, "stddev": [7.34,3.7], "range": [0,17]},
+    "source_ref": "page 6"
   },
   {
     "species": "Lasiurus cinereus",
@@ -298,7 +319,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 2.2, "stddev": [4.9,0], "range": [0,22]},
     "lwr_slope": {"mean:": 0.5, "stddev": [1.3,0], "range": [0,9.5]},
     "fc_slope": {"mean:": 0.6, "stddev": [1.4,0], "range": [0,9.5]},
-    "domnt_slope": {"mean:": 0.8, "stddev": [1.9,0], "range": [0,16]}
+    "domnt_slope": {"mean:": 0.8, "stddev": [1.9,0], "range": [0,16]},
+    "source_ref": "page 6"
   },
   {
     "species": "Nyctinomops femorosaccus",
@@ -312,7 +334,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 2.4, "stddev": [3.9,0.9], "range": [0,11]},
     "lwr_slope": {"mean:": 0.6, "stddev": [1,0.3], "range": [0,3.4]},
     "fc_slope": {"mean:": 0.6, "stddev": [1,0.2], "range": [0,3.7]},
-    "domnt_slope": {"mean:": 1.1, "stddev": [1.8,0.4], "range": [0,5.3]}
+    "domnt_slope": {"mean:": 1.1, "stddev": [1.8,0.4], "range": [0,5.3]},
+    "source_ref": "page 7"
   },
   {
     "species": "Nyctinomops macrotis",
@@ -327,7 +350,8 @@ window.speciesData.push(
     "lwr_slope": {"mean:": 0.2, "stddev": [0.4,0], "range": [0,1.3]},
     "fc_slope": {"mean:": 0.8, "stddev": [1.3,0.2], "range": [0,3.2]},
     "domnt_slope": {"mean:": 0.1, "stddev": [0.2,0], "range": [0,0.4]},
-    "comment": "error in SonoBat dur_range"
+    "comment": "error in SonoBat dur_range",
+    "source_ref": "page 7"
   },
   {
     "species": "Eumops perotis",
@@ -341,7 +365,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 0.6, "stddev": [1,0.2], "range": [0,2.3]},
     "lwr_slope": {"mean:": 0.4, "stddev": [0.8,0], "range": [0,1.7]},
     "fc_slope": {"mean:": 0.4, "stddev": [0.8,0.1], "range": [0,2.7]},
-    "domnt_slope": {"mean:": 0.5, "stddev": [0.8,0.1], "range": [0,1.6]}
+    "domnt_slope": {"mean:": 0.5, "stddev": [0.8,0.1], "range": [0,1.6]},
+    "source_ref": "page 7"
   },
   {
     "species": "Idionycteris phylottis",
@@ -356,7 +381,8 @@ window.speciesData.push(
     "lwr_slope": {"mean:": 1.5, "stddev": [2.1,0.8], "range": [0,4.1]},
     "fc_slope": {"mean:": 1.5, "stddev": [2.3,0.7], "range": [0,4.8]},
     "domnt_slope": {"mean:": 3, "stddev": [3.8,2.1], "range": [0.7,6.3]},
-    "comment": "error in SonoBat fc_range"
+    "comment": "error in SonoBat fc_range",
+    "source_ref": "page 7"
   },
   {
     "species": "Euderma maculatum",
@@ -370,7 +396,8 @@ window.speciesData.push(
     "uppr_slope": {"mean:": 1.8, "stddev": [2.6,1.1], "range": [0.4,6.0]},
     "lwr_slope": {"mean:": 1.8, "stddev": [2.6,1.1], "range": [0.4,5.1]},
     "fc_slope": {"mean:": 0.9, "stddev": [1.9,0], "range": [0,8.6]},
-    "domnt_slope": {"mean:": 1.5, "stddev": [2.1,0.9], "range": [0.4,5.1]}
+    "domnt_slope": {"mean:": 1.5, "stddev": [2.1,0.9], "range": [0.4,5.1]},
+    "source_ref": "page 7"
   }
 ]
 }
