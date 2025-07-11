@@ -13,6 +13,7 @@ function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer
     const channelData = audioBuffer.getChannelData(0);
     const sampleRate = signalWindow.sampleRate;
     const kaiserBeta = params.kaiserBeta;
+    const windowFunction = document.getElementById('window_function').value;
 
     // Process audio data in chunks
     let spectrogramData = [];
@@ -22,9 +23,20 @@ function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer
     let start = Math.floor(signalWindow.start * sampleRate);
     let stop  = Math.min(Math.floor((signalWindow.start + signalWindow.duration) * sampleRate) + fftSize, channelData.length);
 
-    const beta = kaiserBeta;
-    // Always prepare window array - use kaiser window if beta >= 0, otherwise use all 1s (no windowing)
-    const window = (beta >= 0) ? kaiserWindow(fftSize, beta) : new Array(fftSize).fill(1);
+    // Create window based on selected function
+    let window;
+    switch (windowFunction) {
+        case 'blackman-harris-7th':
+            window = blackmanHarris7thOrderWindow(fftSize);
+            break;
+        case 'kaiser':
+            window = kaiserWindow(fftSize, kaiserBeta);
+            break;
+        case 'none':
+        default:
+            window = new Array(fftSize).fill(1);
+            break;
+    }
 
     const numBins = fftSize+1;
     const binsPerKHz = numBins/sampleRate*1000;        
@@ -53,7 +65,7 @@ function generateSpectrogram(fftSize, hopSize, signalWindow, params, audioBuffer
         const remainingLength = Math.min(fftSize, channelData.length - i);
         if (remainingLength < fftSize) break;
         
-        // Copy and apply window (always - window is either kaiser or all 1s)
+        // Copy and apply window
         for(let j = 0; j < fftSize; j++) {
             inputChunk[j] = channelData[i + j] * window[j];
         }

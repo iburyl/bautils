@@ -88,6 +88,22 @@ function kaiserWindow(N, beta) {
     return window;
 }
 
+function blackmanHarris7thOrderWindow(N) {
+    const window = new Array(N);
+    // Coefficients source: https://www.researchgate.net/publication/3908127_A_family_of_cosine-sum_windows_for_high-resolution_measurements
+    const a = [0.2712203605850388, -0.4334446123274422, 0.2180041228929303, -0.06578534329560609, 0.01076186730534183, -0.0007700127105808265, 0.00001368088305992921];
+
+    for (let n = 0; n < N; n++) {
+        const ratio = n / (N - 1);
+        let sum = 0;
+        for (let k = 0; k < a.length; k++) {
+            sum += a[k] * Math.cos(2 * k * Math.PI * ratio);
+        }
+        window[n] = sum;
+    }
+
+    return window;
+}
 
 function gradient(data, i, j) {
     const di = (data[i + 1]?.[j] ?? data[i][j]) - (data[i - 1]?.[j] ?? data[i][j]);
